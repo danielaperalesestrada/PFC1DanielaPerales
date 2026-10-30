@@ -1,0 +1,6 @@
+[submodule "QGS"]
+	path = QGS
+	url = https://github.com/will-zzy/QGS.git
+[submodule "VCR-GauS"]
+	path = VCR-GauS
+	url = https://github.com/HLinChen/VCR-GauS.git
