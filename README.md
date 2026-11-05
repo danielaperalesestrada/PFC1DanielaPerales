@@ -214,23 +214,14 @@ las 30 000 iteraciones.
 
 ## Problemas conocidos
 
-  ----------------------------------------------------------------------------------------------------------------
-  Problema                    Solución
-  --------------------------- ------------------------------------------------------------------------------------
-  `libtiff.so.5` no           `sudo ln -s /lib/x86_64-linux-gnu/libtiff.so.6 /lib/x86_64-linux-gnu/libtiff.so.5`
-  encontrado                  
-
-  Incompatibilidad entre      `pip install "numpy<2"`
-  NumPy 2.x y PyTorch         
-
-  `pkg_resources` no          `pip install "setuptools<81"`
-  encontrado                  
-
-  `unsupported GNU version`   `export CC=gcc-11 CXX=g++-11`
-  con CUDA 11.8               
-
-  `cub/cub.cuh` no encontrado Instalar `cuda-cccl` y configurar `CPATH`.
-  ----------------------------------------------------------------------------------------------------------------
+| Problema | Solución |
+|---|---|
+| `libtiff.so.5` no encontrado | `sudo ln -s /lib/x86_64-linux-gnu/libtiff.so.6 /lib/x86_64-linux-gnu/libtiff.so.5` |
+| Incompatibilidad entre NumPy 2.x y PyTorch | `pip install "numpy<2"` |
+| `pkg_resources` no encontrado | `pip install "setuptools<81"` |
+| `unsupported GNU version` con CUDA 11.8 | `export CC=gcc-11 CXX=g++-11` |
+| `cub/cub.cuh` no encontrado | Instalar `cuda-cccl` y configurar `CPATH` |
+| `cast.h` de pybind11 (QGS) | Parchear `return caster.operator typename ...` por `using result_t = ...; return caster.operator result_t();` |
 
 ## Referencias
 
