@@ -151,9 +151,9 @@ python tools/depth2mesh.py --mesh_name ours.ply --split 1 --method tsdf_cpu --vo
 
 Los resultados de QGS obtenidos para el escaneo 24 son los siguientes:
 
-  Método     Accuracy (mm)   Completeness (mm)   Overall (mm)
-  -------- --------------- ------------------- --------------
-  QGS               0.3735              0.4567         0.4151
+| Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
+|---|---|---|---|
+| QGS | 0.3735 | 0.4567 | **0.4151** |
 
 Como referencia, el artículo original de QGS reporta un valor Overall de
 0.54 mm, correspondiente al promedio de 15 escaneos.
