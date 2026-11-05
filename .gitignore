@@ -1,0 +1,22 @@
+# Datos y resultados pesados (no van al repo)
+datasets/
+outputs/
+tmp_meta/
+GeoWizard/
+
+# Modelos y checkpoints
+*.pth
+*.ply
+
+# Logs de ejecucion
+nohup.out
+run_*.log
+nohup_*.out
+
+# Temporales
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+tmp_meta/
+GeoWizard/

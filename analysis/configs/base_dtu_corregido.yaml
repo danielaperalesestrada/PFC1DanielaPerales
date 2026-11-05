@@ -1,0 +1,33 @@
+_parent_: configs/reconstruct.yaml
+
+model:
+    use_decoupled_appearance: False
+    use_decoupled_dnormal: False
+    normal_folder: 'normal_npz_indoor'
+    eval: False
+
+optim:
+    exp_t: 0.01
+    mask_depth_thr: 0
+    consistent_normal_from_iter: 15000
+    close_depth_from_iter: 15000
+    densify_large:
+        percent_dense: 1e-2
+        sample_cams:
+            random: False
+            num: 30
+    loss_weight:
+        semantic: 0
+        depth_normal: 0
+        mono_normal: 0.01       # lambda_2 en el paper
+        consistent_normal: 0.015 # lambda_3 en el paper
+        distortion: 1000
+        depth_var: 0
+        l1_scale: 1.0           # lambda_1 en el paper (estaba perdido)
+    prune:
+        iterations: [99999]
+        percent: 0.5
+        decay: 0.6
+        v_pow: 0.1
+    random_background: False
+        
