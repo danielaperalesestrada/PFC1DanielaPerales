@@ -1,0 +1,67 @@
+diff --git a/python_scripts/run_base.py b/python_scripts/run_base.py
+index 1e3f778..7e58c0e 100644
+--- a/python_scripts/run_base.py
++++ b/python_scripts/run_base.py
+@@ -58,7 +58,8 @@ train_cmd = "OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} \
+             --train.debug_from={debug_from} \
+             --model.data_device={data_device} \
+             --model.resolution={resolution} \
+-            --wandb \
++            --model.white_background=True \
++            --pipline.convert_SHs_python=True \
+             --wandb_name {project}"
+ 
+ 
+@@ -70,7 +71,8 @@ train_cmd_new = "OMP_NUM_THREADS=4 CUDA_VISIBLE_DEVICES={gpu} \
+             --train.debug_from={debug_from} \
+             --model.data_device={data_device} \
+             --model.resolution={resolution} \
+-            --wandb \
++            --model.white_background=True \
++            --pipline.convert_SHs_python=True \
+             --wandb_name {project}"
+ 
+ 
+diff --git a/scene/dataset_readers.py b/scene/dataset_readers.py
+index b54d71e..779b067 100644
+--- a/scene/dataset_readers.py
++++ b/scene/dataset_readers.py
+@@ -230,12 +230,10 @@ def readColmapSceneInfo(path, images, eval, llffhold=8, ratio=0, split=False, lo
+     else:
+         print("No meta.json file found, using default values.")
+         
+-        if not os.path.exists(ply_path):
+-            print("Converting point3d.bin to .ply, will happen only the first time you open the scene.")
+-            try:
+-                xyz, rgb, _ = read_points3D_binary(bin_path)
+-            except:
+-                xyz, rgb, _ = read_points3D_text(txt_path)
++        try:
++            xyz, rgb, _ = read_points3D_binary(bin_path)
++        except:
++            xyz, rgb, _ = read_points3D_text(txt_path)
+         #     xyz, rgb = filter_point_cloud(trans, scale, xyz, rgb)
+         #     storePly(ply_path, xyz, rgb)
+         # try:
+diff --git a/trainer.py b/trainer.py
+index 3fda06d..6be6716 100644
+--- a/trainer.py
++++ b/trainer.py
+@@ -113,7 +113,7 @@ class Trainer(object):
+                 with open(wandb_path, "r") as f:
+                     wandb_id = f.read()
+             else:
+-                wandb_id = wandb.util.generate_id()
++                import uuid; wandb_id = uuid.uuid4().hex[:8]
+                 with open(wandb_path, "w") as f:
+                     f.write(wandb_id)
+         if use_group:
+@@ -131,7 +131,7 @@ class Trainer(object):
+                     name=name,
+                     dir=cfg.logdir,
+                     resume=resume,
+-                    settings=wandb.Settings(start_method="fork"),
++                    
+                     mode=mode)
+         wandb.config.update({'dataset': cfg.data.name})
+ 

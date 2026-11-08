@@ -3,6 +3,8 @@ datasets/
 outputs/
 tmp_meta/
 GeoWizard/
+backup_vcr_scan24/
+papelera_vcr/
 
 # Modelos y checkpoints
 *.pth
@@ -18,5 +20,6 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .DS_Store
-tmp_meta/
-GeoWizard/
+
+# Excepciones: los .ply que SI van al repo
+!analysis/qgs/point_cloud.ply
