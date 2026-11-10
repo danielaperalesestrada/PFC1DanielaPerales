@@ -1,25 +1,30 @@
-# Datos y resultados pesados (no van al repo)
-datasets/
-outputs/
-tmp_meta/
-GeoWizard/
-backup_vcr_scan24/
-papelera_vcr/
+# Datos y resultados locales
+/datasets/
+/outputs/
+/analysis/
+/tmp_meta/
 
-# Modelos y checkpoints
-*.pth
+# Repositorios y respaldos locales
+/GeoWizard/
+/backup_vcr_scan24/
+/papelera_vcr/
+
+# Modelos y archivos de geometría
 *.ply
+*.pth
+*.ckpt
 
-# Logs de ejecucion
+# Registros de ejecución
+*.log
 nohup.out
-run_*.log
 nohup_*.out
+run_*.log
 
-# Temporales
+# Archivos temporales de Python
 __pycache__/
-*.pyc
+*.py[cod]
 .ipynb_checkpoints/
-.DS_Store
 
-# Excepciones: los .ply que SI van al repo
-!analysis/qgs/point_cloud.ply
+# Herramientas y archivos del sistema
+.DS_Store
+wandb/

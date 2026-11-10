@@ -1,234 +1,347 @@
 # Benchmark: QGS vs VCR-GauS en DTU
 
-Este proyecto compara dos métodos de reconstrucción de superficies
-basados en Gaussian Splatting:
+Este proyecto compara dos métodos de reconstrucción geométrica basados en Gaussian Splatting:
 
--   **QGS (Quadratic Gaussian Splatting, ICCV 2025):** utiliza
-    primitivas geométricas cuadráticas de segundo orden.
--   **VCR-GauS (NeurIPS 2024):** incorpora un regularizador de
-    profundidad y normales consistente entre múltiples vistas sobre
-    surfels 2D.
+- **QGS (Quadratic Gaussian Splatting, ICCV 2025):** utiliza primitivas geométricas cuadráticas de segundo orden para representar superficies.
+- **VCR-GauS (NeurIPS 2024):** utiliza Gaussianas 3D e incorpora un regularizador de profundidad y normales consistente entre múltiples vistas.
 
-El objetivo es evaluar la calidad geométrica de ambos métodos mediante
-métricas de Chamfer Distance (Accuracy, Completeness y Overall),
-utilizando el conjunto de datos DTU. Asimismo, se documentan las
-correcciones aplicadas al repositorio oficial de VCR-GauS para conseguir
-un entrenamiento estable.
+El objetivo es comparar la calidad geométrica de las superficies reconstruidas mediante métricas de distancia entre la reconstrucción y una geometría de referencia (*ground truth*).
 
-## Estructura del proyecto
+Los experimentos se realizan sobre el conjunto de datos **DTU**, utilizando el escaneo 24 (`scan24`).
 
-``` text
-PFC1DanielaPerales/
-├── QGS/                  Repositorio de QGS
-├── VCR-GauS/             Repositorio de VCR-GauS
-├── datasets/             Conjuntos de datos y ground truth
-├── outputs/              Resultados de los entrenamientos
-├── benchmarks/           Resultados del benchmark de QGS
-├── analysis/             Configuraciones y análisis experimental
-│   ├── configs/          Configuraciones utilizadas
-│   ├── depth_maps/       Mapas de profundidad de VCR-GauS
-│   ├── logs/             Registros del entrenamiento
-│   └── resultados_benchmark.csv
-└── README.md
-```
+Además, se documentan las correcciones aplicadas a la implementación de VCR-GauS para conseguir un entrenamiento estable en el entorno utilizado.
 
-Los conjuntos de datos y los resultados de entrenamiento no están
-incluidos en el repositorio.
-
-## Requisitos
-
--   Sistema operativo Linux (Ubuntu 22.04 o 24.04).
--   GPU NVIDIA con al menos 8 GB de VRAM.
--   CUDA 12.1 para QGS y CUDA 11.8 para VCR-GauS.
--   Miniconda o Anaconda.
--   GCC 11 y GCC 12.
-
-Las configuraciones se probaron en una NVIDIA GeForce RTX 4060 Laptop
-GPU de 8 GB.
-
-## Instalación y compilación
-
-Cada método utiliza un entorno independiente debido a sus diferentes
-versiones de CUDA y PyTorch.
-
-### QGS
-
-Configuración utilizada: CUDA 12.1 y PyTorch 2.2.2.
-
-``` bash
-cd QGS
-
-conda env create -f environment.yml
-conda activate QGS
-
-conda install -c conda-forge cuda-cccl -y
-
-export CC=gcc-12 CXX=g++-12
-export CUDA_HOME=$CONDA_PREFIX
-export PATH=$CUDA_HOME/bin:$PATH
-export CPATH=$CONDA_PREFIX/include/cccl:$CPATH
-
-pip install ./submodules/diff-quadratic-rasterization --no-build-isolation
-pip install ./submodules/simple-knn --no-build-isolation
-```
-
-### VCR-GauS
-
-Configuración utilizada: CUDA 11.8 y PyTorch 2.0.1.
-
-``` bash
-cd VCR-GauS
-
-conda create -n vcr python=3.10 -y
-conda activate vcr
-
-pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
-
-conda install -c nvidia cuda-nvcc=11.8.89 -y
-conda install -c "nvidia/label/cuda-11.8.0" cuda-cudart-dev -y
-
-pip install -e ".[train]" --no-build-isolation
-pip install "setuptools<81"
-
-git submodule update --init --recursive
-
-export CC=gcc-11 CXX=g++-11
-
-pip install ./submodules/diff-gaussian-rasterization --no-build-isolation
-pip install ./submodules/simple-knn --no-build-isolation
-```
-
-## Conjunto de datos DTU
-
-Se utilizan dos conjuntos de datos: uno para el entrenamiento y otro
-para la evaluación de las reconstrucciones.
-
-**Datos de entrenamiento:**
-
-``` bash
-gdown 1ODiOu72tAGPTnhVn0cFZ9MvymDgcoHxQ
-
-mkdir -p datasets/dtu
-tar -xzf dtu.tar.gz -C datasets/dtu
-```
-
-**Ground truth:**
-
-``` bash
-unzip dtu-sample.zip
-mv "SampleSet/MVS Data" SampleSet/MVS_Data
-```
-
-## Entrenamiento y evaluación
-
-### QGS
-
-``` bash
-conda activate QGS
-cd QGS
-
-python train.py -s ../datasets/dtu/DTU/scan24 -m ../outputs/qgs_scan24 --conf_path ./config/DTU.yaml
-
-python render.py --conf_path ../outputs/qgs_scan24/config.yaml --skip_train --skip_test
-
-python ./scripts/eval_dtu/eval.py --conf_path ../outputs/qgs_scan24/config.yaml
-```
-
-### VCR-GauS
-
-``` bash
-conda activate vcr
-cd VCR-GauS
-
-python train.py --config=configs/dtu/base.yaml --logdir=../outputs/vcr_gaus/dtu/scan24 --model.source_path=../datasets/dtu/DTU/scan24/ --model.data_device=cuda --model.white_background=True --model.sh_degree=3 --optim.iterations=30000
-
-python tools/depth2mesh.py --mesh_name ours.ply --split 1 --method tsdf_cpu --voxel_size 0.004 --num_cluster 1 --max_depth 3 --clean --prob_thres 0.15 --cfg_path ../outputs/vcr_gaus/dtu/scan24/config.yaml
-```
-
-## Resultados
+## Resultados principales
 
 ### Evaluación geométrica: DTU scan24
 
-Los resultados de QGS obtenidos para el escaneo 24 son los siguientes:
+Se evaluaron las dos reconstrucciones utilizando un procedimiento común de filtrado y los mismos parámetros de evaluación.
 
 | Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
-|---|---|---|---|
-| QGS | 0.3735 | 0.4567 | **0.4151** |
+|---|---:|---:|---:|
+| QGS | 0.37360 | 0.45668 | **0.41514** |
+| VCR-GauS | 0.48166 | 0.60121 | **0.54143** |
 
-Como referencia, el artículo original de QGS reporta un valor Overall de
-0.54 mm, correspondiente al promedio de 15 escaneos.
+QGS obtuvo un valor Overall aproximadamente **23.33 % menor** que VCR-GauS en el escaneo 24.
 
-### Estabilidad del entrenamiento: VCR-GauS
+Estos resultados corresponden exclusivamente a `scan24` y no representan una evaluación sobre el conjunto completo DTU.
 
-Después de aplicar las correcciones descritas en este proyecto, VCR-GauS
-completó las 30 000 iteraciones de entrenamiento sin presentar picos de
-pérdida. Se registraron cero eventos de este tipo, frente a los 102
-observados con la configuración original.
+### Visualización de resultados
 
-También se corrigió el rango de los valores de renderizado, limitándolos
-al intervalo \[0, 1\]. Los mapas de profundidad obtenidos muestran una
-geometría coherente, con bordes definidos y superficies planas.
+La siguiente figura presenta la comparación de las tres métricas geométricas:
 
-Los resultados visuales se encuentran en `analysis/depth_maps/`.
+![Comparación geométrica entre QGS y VCR-GauS en DTU scan24](results/figures/metrics_comparison_scan24.png)
 
-### Métricas de evaluación
+Los resultados numéricos se encuentran en `results/metrics/comparison.csv`.
 
-Se utilizan las siguientes métricas para evaluar la calidad geométrica
-de las reconstrucciones:
+## Estructura del proyecto
 
--   **Accuracy:** distancia media de cada punto de la malla reconstruida
-    al punto más cercano del ground truth.
--   **Completeness:** distancia media de cada punto del ground truth al
-    punto más cercano de la malla reconstruida.
--   **Overall:** promedio de Accuracy y Completeness.
+```text
+PFC1DanielaPerales/
+├── QGS/                       Repositorio de QGS (submódulo)
+├── VCR-GauS/                  Repositorio de VCR-GauS (submódulo)
+├── configs/
+│   ├── qgs/
+│   │   └── dtu_scan24.yaml
+│   └── vcr_gaus/
+│       └── dtu_scan24.yaml
+├── scripts/
+│   ├── training/
+│   │   ├── train_qgs.sh
+│   │   └── train_vcr_gaus.sh
+│   ├── evaluation/
+│   │   ├── evaluate_common.py
+│   │   └── evaluate_metrics.py
+│   └── analysis/
+│       ├── compare_metrics.py
+│       └── visualize_results.py
+├── environments/
+│   ├── qgs/
+│   │   ├── environment.yml
+│   │   └── README.md
+│   └── vcr_gaus/
+│       ├── environment.yml
+│       └── README.md
+├── patches/
+│   └── vcr_gaus/
+│       └── vcr_gaus_fixes.patch
+├── results/
+│   ├── metrics/
+│   │   └── comparison.csv
+│   └── figures/
+│       └── metrics_comparison_scan24.png
+├── docs/
+│   ├── methodology.md
+│   ├── experimental_setup.md
+│   └── references.md
+├── datasets/                  Datos locales (no incluidos)
+├── outputs/                   Entrenamientos (no incluidos)
+├── .gitignore
+├── .gitmodules
+└── README.md
+```
 
-## Correcciones aplicadas a VCR-GauS
+Los directorios `datasets/` y `outputs/` contienen archivos locales que no se incluyen en el repositorio. Las mallas PLY intermedias y los checkpoints tampoco forman parte de los resultados publicados.
 
-Se identificaron y corrigieron tres problemas principales en la
-implementación original:
+## Requisitos
 
-**1. Inestabilidad numérica del rasterizador**
+Los experimentos se realizaron en el siguiente entorno:
 
-Las escalas muy anisotrópicas de algunos gaussianos generaban
-covarianzas 2D degeneradas en el kernel CUDA. Esto provocaba picos de
-pérdida L1 y valores extremos durante el renderizado.
+| Componente | QGS | VCR-GauS |
+|---|---|---|
+| Sistema operativo | Linux | Linux |
+| Python | 3.9.19 | 3.10.22 |
+| PyTorch | 2.2.2 | 2.0.1 |
+| Torchvision | 0.17.2 | 0.15.2 |
+| CUDA | 12.1 | 11.8 |
+| GCC | 12 | 11 |
 
-Se estableció un límite mínimo para las escalas de los gaussianos y se
-restringieron los valores del renderizado al intervalo \[0, 1\].
+Hardware utilizado:
 
-**2. Duplicación de `loss_weight` en la configuración YAML**
+- GPU: NVIDIA GeForce RTX 4060 Laptop GPU.
+- Memoria de GPU: 8 GB.
+- Gestor de entornos: Conda.
 
-El archivo `base.yaml` definía dos bloques `loss_weight`, por lo que el
-segundo sobrescribía al primero y eliminaba el parámetro `l1_scale`.
+Cada método requiere un entorno independiente debido a sus diferentes versiones de PyTorch y CUDA.
 
-Se unificaron ambos bloques y se estableció `l1_scale: 1.0`.
+## Instalación
 
-**3. Poda excesiva de gaussianos**
+### 1. Clonar el repositorio
 
-La configuración heredada de `reconstruct.yaml` aplicaba una poda
-agresiva que eliminaba una proporción considerable de gaussianos durante
-el entrenamiento.
+```bash
+git clone --recurse-submodules https://github.com/danielaperalesestrada/PFC1DanielaPerales.git
 
-Se modificó la configuración de poda para evitar su ejecución durante
-las 30 000 iteraciones.
+cd PFC1DanielaPerales
+```
 
-## Problemas conocidos
+La opción `--recurse-submodules` permite inicializar los repositorios de QGS y VCR-GauS.
 
-| Problema | Solución |
+### 2. Preparar QGS
+
+Crear y activar el entorno:
+
+```bash
+conda env create -f environments/qgs/environment.yml
+conda activate QGS
+```
+
+Después, seguir las instrucciones de instalación y compilación de:
+
+[`environments/qgs/README.md`](environments/qgs/README.md)
+
+### 3. Preparar VCR-GauS
+
+Crear y activar el entorno:
+
+```bash
+conda env create -f environments/vcr_gaus/environment.yml
+conda activate vcr
+```
+
+Después, seguir las instrucciones de instalación y compilación de:
+
+[`environments/vcr_gaus/README.md`](environments/vcr_gaus/README.md)
+
+## Conjunto de datos DTU
+
+El experimento utiliza dos componentes del conjunto de datos DTU:
+
+**Datos de entrenamiento**
+
+El escaneo seleccionado debe estar disponible en:
+
+```text
+datasets/
+└── dtu/
+    └── DTU/
+        └── scan24/
+            ├── images/
+            └── ...
+```
+
+**Datos de referencia**
+
+Los archivos de referencia utilizados para la evaluación se encuentran organizados bajo:
+
+```text
+datasets/
+└── dtu_gt/
+    └── dtu-sample/
+        └── SampleSet/
+            └── MVS_Data/
+                ├── ObsMask/
+                ├── Points/
+                ├── Calibration/
+                ├── Rectified/
+                └── ...
+```
+
+Para el escaneo 24 se utilizan, entre otros, los siguientes archivos:
+
+- `Points/stl/stl024_total.ply`
+- `ObsMask/ObsMask24_10.mat`
+- `ObsMask/Plane24.mat`
+
+La ubicación de los datos debe respetar las rutas indicadas en las configuraciones YAML y en los scripts de evaluación.
+
+Los conjuntos de datos no se distribuyen con este repositorio. Deben obtenerse por separado siguiendo las indicaciones oficiales de DTU.
+
+## Entrenamiento
+
+Los scripts de entrenamiento utilizan las configuraciones portables almacenadas en `configs/`.
+
+### QGS
+
+Activar el entorno y ejecutar:
+
+```bash
+conda activate QGS
+
+bash scripts/training/train_qgs.sh
+```
+
+El script utiliza `configs/qgs/dtu_scan24.yaml` y guarda los resultados en:
+
+```text
+outputs/qgs_scan24/
+```
+
+El directorio de salida debe estar vacío para iniciar el entrenamiento. El script evita sobrescribir resultados anteriores.
+
+### VCR-GauS
+
+Activar el entorno y ejecutar:
+
+```bash
+conda activate vcr
+
+bash scripts/training/train_vcr_gaus.sh
+```
+
+El script utiliza `configs/vcr_gaus/dtu_scan24.yaml` y guarda los resultados en:
+
+```text
+outputs/vcr_gaus/dtu/scan24/final_shpy/
+```
+
+La configuración contempla 30 000 iteraciones, checkpoints cada 2 000 iteraciones y guardados del modelo en las iteraciones 14 000, 29 000 y 30 000.
+
+El script registra el entrenamiento en `train.log` y utiliza una configuración de memoria CUDA compatible con PyTorch 2.0.1.
+
+Para seleccionar otro directorio de salida se puede definir la variable `VCR_LOGDIR`:
+
+```bash
+VCR_LOGDIR=/ruta/alternativa bash scripts/training/train_vcr_gaus.sh
+```
+
+Este directorio también debe estar vacío antes de comenzar.
+
+## Evaluación geométrica
+
+La evaluación se organiza en dos etapas: filtrado común de las mallas y cálculo de métricas.
+
+### 1. Filtrado con una máscara común
+
+Una vez obtenidas las mallas de ambos métodos, ejecutar desde la raíz del proyecto:
+
+```bash
+python scripts/evaluation/evaluate_common.py --method both
+```
+
+El script permite procesar ambos métodos o seleccionar uno mediante `--method qgs` y `--method vcr_gaus`.
+
+Las mallas filtradas se almacenan en:
+
+```text
+results/dtu/scan24/comparison/
+├── qgs/
+│   ├── culled_mesh_common.ply
+│   └── culling_report.json
+└── vcr_gaus/
+    ├── culled_mesh_common.ply
+    └── culling_report.json
+```
+
+Las rutas de las mallas originales se encuentran definidas en `scripts/evaluation/evaluate_common.py`.
+
+### 2. Cálculo de métricas
+
+Para evaluar ambas reconstrucciones utilizando el mismo protocolo:
+
+```bash
+python scripts/evaluation/evaluate_metrics.py \
+    --method both \
+    --density 0.2 \
+    --patch 60 \
+    --max-dist 20 \
+    --seed 42 \
+    --workers 4
+```
+
+El script también permite evaluar cada método individualmente.
+
+Los informes detallados se almacenan junto a las mallas filtradas, en archivos `metrics_common.json`.
+
+### 3. Comparación de resultados
+
+Generar la tabla comparativa:
+
+```bash
+python scripts/analysis/compare_metrics.py
+```
+
+Este script comprueba que ambos métodos utilizaron los mismos parámetros de evaluación y verifica que Overall corresponda al promedio de Accuracy y Completeness.
+
+El resultado se guarda en:
+
+```text
+results/metrics/comparison.csv
+```
+
+### 4. Generación del gráfico
+
+Para generar la visualización comparativa:
+
+```bash
+python scripts/analysis/visualize_results.py
+```
+
+La figura se guarda en:
+
+```text
+results/figures/metrics_comparison_scan24.png
+```
+
+## Correcciones de VCR-GauS
+
+Durante el trabajo con VCR-GauS se realizaron modificaciones sobre tres archivos de la implementación original:
+
+| Archivo | Modificación |
 |---|---|
-| `libtiff.so.5` no encontrado | `sudo ln -s /lib/x86_64-linux-gnu/libtiff.so.6 /lib/x86_64-linux-gnu/libtiff.so.5` |
-| Incompatibilidad entre NumPy 2.x y PyTorch | `pip install "numpy<2"` |
-| `pkg_resources` no encontrado | `pip install "setuptools<81"` |
-| `unsupported GNU version` con CUDA 11.8 | `export CC=gcc-11 CXX=g++-11` |
-| `cub/cub.cuh` no encontrado | Instalar `cuda-cccl` y configurar `CPATH` |
-| `cast.h` de pybind11 (QGS) | Parchear `return caster.operator typename ...` por `using result_t = ...; return caster.operator result_t();` |
+| `python_scripts/run_base.py` | Ajustes de los argumentos incluidos en los comandos de entrenamiento. |
+| `scene/dataset_readers.py` | Modificación de la lectura de la nube de puntos para utilizar los archivos disponibles. |
+| `trainer.py` | Cambios en la inicialización y configuración de WandB. |
+
+El parche con estas modificaciones se encuentra en:
+
+[`patches/vcr_gaus/vcr_gaus_fixes.patch`](patches/vcr_gaus/vcr_gaus_fixes.patch)
+
+Las modificaciones y su contexto técnico se documentan junto con el código del proyecto y los archivos de análisis.
+
+## Documentación adicional
+
+Para conocer con mayor detalle el proyecto, consultar:
+
+- [Metodología](docs/methodology.md): descripción de los métodos y del procedimiento de comparación.
+- [Configuración experimental](docs/experimental_setup.md): hardware, software, parámetros y métricas utilizadas.
+- [Referencias bibliográficas](docs/references.md): publicaciones científicas y repositorios originales.
+- [Entorno QGS](environments/qgs/README.md): instalación y compilación de QGS.
+- [Entorno VCR-GauS](environments/vcr_gaus/README.md): instalación y compilación de VCR-GauS.
 
 ## Referencias
 
--   Zhang et al. *Quadratic Gaussian Splatting: High Quality Surface
-    Reconstruction with Second-order Geometric Primitives*. ICCV 2025.
--   Chen, H., Wei, F., Li, C., Huang, T., Wang, Y., & Lee, G. H.
-    *VCR-GauS: View-Consistent Depth-Normal Regularizer for Gaussian
-    Surface Reconstruction*. NeurIPS 2024.
--   Jensen et al. *Large Scale Multi-view Stereopsis Evaluation*. CVPR
-    2014.
+- Zhang et al. (2025). *Quadratic Gaussian Splatting: High Quality Surface Reconstruction with Second-order Geometric Primitives*. ICCV.
+- Chen et al. (2024). *VCR-GauS: View Consistent Depth-Normal Regularizer for Gaussian Surface Reconstruction*. NeurIPS.
+- Jensen et al. (2014). *Large Scale Multi-view Stereopsis Evaluation*. CVPR.
+
+Las referencias bibliográficas completas se encuentran en [`docs/references.md`](docs/references.md).

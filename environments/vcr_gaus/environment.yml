@@ -1,0 +1,17 @@
+name: vcr
+channels:
+  - nvidia/label/cuda-11.8.0
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - "setuptools<81"
+  - cuda-nvcc=11.8.89
+  - cuda-cudart-dev
+  - pip:
+      - --index-url=https://download.pytorch.org/whl/cu118
+      - torch==2.0.1
+      - torchvision==0.15.2
+      - torchaudio==2.0.2

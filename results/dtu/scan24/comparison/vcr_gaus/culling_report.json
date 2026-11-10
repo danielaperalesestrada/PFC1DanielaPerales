@@ -1,0 +1,13 @@
+{
+    "input_mesh": "./outputs/vcr_gaus/dtu/scan24/final_shpy/ours.ply",
+    "output_mesh": "./results/dtu/scan24/comparison/vcr_gaus/culled_mesh_common.ply",
+    "camera_count": 49,
+    "mask_dilation_radius": 24,
+    "vertices_original": 188748,
+    "vertices_conservados": 188748,
+    "faces_originales": 369573,
+    "faces_conservadas": 369573,
+    "largest_component_selection": false,
+    "automatic_mesh_processing": false,
+    "hole_repair": false
+}

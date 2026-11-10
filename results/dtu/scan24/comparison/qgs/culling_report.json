@@ -1,0 +1,13 @@
+{
+    "input_mesh": "./outputs/qgs_scan24/train/ours_30000/fuse_post.ply",
+    "output_mesh": "./results/dtu/scan24/comparison/qgs/culled_mesh_common.ply",
+    "camera_count": 49,
+    "mask_dilation_radius": 24,
+    "vertices_original": 192542,
+    "vertices_conservados": 192138,
+    "faces_originales": 376551,
+    "faces_conservadas": 375866,
+    "largest_component_selection": false,
+    "automatic_mesh_processing": false,
+    "hole_repair": false
+}
