@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import csv
 import json
 import math
@@ -7,12 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
-REPORTS = {
-    "qgs": ROOT / "results/dtu/scan24/comparison/qgs/metrics_common.json",
-    "vcr_gaus": ROOT / "results/dtu/scan24/comparison/vcr_gaus/metrics_common.json",
-}
-
-OUTPUT = ROOT / "results/metrics/comparison.csv"
+REPORTS = {}
+OUTPUT = None
 
 FIELDS = [
     "method",
@@ -32,7 +29,7 @@ FIELDS = [
 ]
 
 
-def load_report(method, path):
+def load_report(method, path, scan_id):
     if not path.is_file():
         raise FileNotFoundError(f"No se encontró: {path}")
 
@@ -42,8 +39,8 @@ def load_report(method, path):
     if report["method"] != method:
         raise ValueError(f"El método del informe no coincide: {path}")
 
-    if report["scan_id"] != 24:
-        raise ValueError(f"Se esperaba scan24: {path}")
+    if report["scan_id"] != scan_id:
+        raise ValueError(f"Se esperaba scan{scan_id}: {path}")
 
     metrics = report["metrics"]
     params = report["parameters"]
@@ -58,8 +55,30 @@ def load_report(method, path):
 
 
 def main():
+    global REPORTS, OUTPUT
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--scan-id", type=int, default=24)
+    args = parser.parse_args()
+
+    if args.scan_id < 1:
+        parser.error("--scan-id debe ser positivo")
+
+    scan = f"scan{args.scan_id}"
+
+    REPORTS = {
+        "qgs": ROOT / "results/dtu" / scan / "comparison/qgs/metrics_common.json",
+        "vcr_gaus": ROOT / "results/dtu" / scan / "comparison/vcr_gaus/metrics_common.json",
+    }
+
+    OUTPUT = (
+        ROOT / "results/metrics/comparison.csv"
+        if args.scan_id == 24
+        else ROOT / "results/metrics" / f"comparison_{scan}.csv"
+    )
+
     reports = {
-        method: load_report(method, path)
+        method: load_report(method, path, args.scan_id)
         for method, path in REPORTS.items()
     }
 

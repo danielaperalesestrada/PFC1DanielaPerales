@@ -14,13 +14,10 @@ from sklearn.neighbors import NearestNeighbors
 from tqdm import tqdm
 
 ROOT = Path(__file__).resolve().parents[2]
-BASE = ROOT / "results/dtu/scan24/comparison"
-GT = ROOT / "datasets/dtu_gt/DTU_eval"
-MESHES = {
-    "qgs": BASE / "qgs/culled_mesh_common.ply",
-    "vcr_gaus": BASE / "vcr_gaus/culled_mesh_common.ply",
-}
-SCAN = 24
+BASE = None
+GT = ROOT / "datasets/dtu_gt/dtu-sample/SampleSet/MVS_Data"
+MESHES = {}
+SCAN = None
 
 
 def sample_single_tri(task):
@@ -205,7 +202,7 @@ def evaluate(method, args):
             "sampling": "same triangle sampling formula as original QGS/VCR-GauS evaluators",
             "downsampling": "radius_neighbors with fixed-seed shuffled point order",
             "d2s": "observable reconstruction points to complete STL",
-            "s2d": "STL points above Plane24 to reconstruction points inside BB",
+            "s2d": f"STL points above Plane{SCAN} to reconstruction points inside BB",
             "distance_filter": "only distances strictly below max_dist are averaged",
         },
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -221,10 +218,13 @@ def evaluate(method, args):
 
 
 def main():
+    global BASE, MESHES, SCAN
+
     parser = argparse.ArgumentParser(
         description="Metricas DTU comunes para QGS y VCR-GauS."
     )
     parser.add_argument("--method", choices=("qgs", "vcr_gaus", "both"), default="both")
+    parser.add_argument("--scan-id", type=int, default=24)
     parser.add_argument("--density", type=float, default=0.2)
     parser.add_argument("--patch", type=float, default=60.0)
     parser.add_argument("--max-dist", type=float, default=20.0)
@@ -232,6 +232,17 @@ def main():
     parser.add_argument("--workers", type=int, default=min(8, mp.cpu_count()))
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
+
+    if args.scan_id < 1:
+        parser.error("--scan-id debe ser positivo")
+
+    SCAN = args.scan_id
+    BASE = ROOT / "results/dtu" / f"scan{SCAN}" / "comparison"
+    MESHES = {
+        "qgs": BASE / "qgs/culled_mesh_common.ply",
+        "vcr_gaus": BASE / "vcr_gaus/culled_mesh_common.ply",
+    }
+
     if args.workers < 1:
         parser.error("--workers debe ser al menos 1.")
     methods = list(MESHES) if args.method == "both" else [args.method]

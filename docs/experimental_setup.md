@@ -2,7 +2,7 @@
 
 ## 1. Hardware y software
 
-Los experimentos se realizaron utilizando una NVIDIA GeForce RTX 4060 Laptop GPU con 8 GB de VRAM, bajo Linux.
+Los experimentos se realizaron en Ubuntu 24.04.3 LTS utilizando una NVIDIA GeForce RTX 4060 Laptop GPU con 8 GB de VRAM. Durante las ejecuciones registradas se utilizó el kernel `6.14.0-36-generic` y el controlador NVIDIA `580.95.05`.
 
 Debido a los diferentes requisitos de ambos métodos, se utilizaron entornos Conda independientes.
 
@@ -18,15 +18,14 @@ Las instrucciones de instalación y compilación se encuentran en `environments/
 
 ## 2. Conjunto de datos
 
-Se utilizó el conjunto de datos **DTU (Multi-View Stereo Evaluation)**, seleccionando el escaneo 24 (`scan24`).
+Se utilizó el conjunto de datos **DTU (Multi-View Stereo Evaluation)**, seleccionando dos escenas: `scan24` y `scan37`.
 
 El conjunto se utiliza tanto para entrenar los modelos como para evaluar geométricamente las superficies reconstruidas.
 
 Para la evaluación se utilizaron los siguientes archivos de referencia:
 
-- `Points/stl/stl024_total.ply`: nube de puntos de referencia.
-- `ObsMask/ObsMask24_10.mat`: máscara de observación.
-- `ObsMask/Plane24.mat`: información del plano de referencia.
+- `scan24`: `Points/stl/stl024_total.ply`, `ObsMask/ObsMask24_10.mat` y `ObsMask/Plane24.mat`.
+- `scan37`: `Points/stl/stl037_total.ply`, `ObsMask/ObsMask37_10.mat` y `ObsMask/Plane37.mat`.
 
 Los datos y archivos de referencia se almacenan localmente y no se incluyen en el repositorio.
 
@@ -34,9 +33,7 @@ Los datos y archivos de referencia se almacenan localmente y no se incluyen en e
 
 ### 3.1. QGS
 
-Se utilizó la configuración DTU adaptada al escaneo 24, almacenada en:
-
-`configs/qgs/dtu_scan24.yaml`
+Se utilizaron configuraciones DTU independientes para cada escena, almacenadas en `configs/qgs/dtu_scan24.yaml` y `configs/qgs/dtu_scan37.yaml`. La configuración de `scan37` conserva los parámetros de `scan24` y cambia las rutas de entrada/salida y el identificador de escena.
 
 Entre los parámetros específicos utilizados se encuentran:
 
@@ -61,9 +58,7 @@ La configuración completa se encuentra en el archivo YAML correspondiente.
 
 ### 3.2. VCR-GauS
 
-Se utilizó la configuración DTU del repositorio, adaptada al escaneo 24 y almacenada en:
-
-`configs/vcr_gaus/dtu_scan24.yaml`
+Se utilizaron `configs/vcr_gaus/dtu_scan24.yaml` y `configs/vcr_gaus/dtu_scan37.yaml`. Ambas conservan los mismos parámetros; la escena y el directorio de salida se proporcionan mediante los argumentos del script de entrenamiento.
 
 Durante el entrenamiento se utilizaron los siguientes argumentos específicos:
 
@@ -78,6 +73,8 @@ Durante el entrenamiento se utilizaron los siguientes argumentos específicos:
 | Guardado del modelo | 14000, 29000 y 30000 |
 
 El entrenamiento utilizó cuatro hilos de OpenMP y la configuración de memoria CUDA `max_split_size_mb:128`.
+
+VCR-GauS se ejecutó con `load_normal: true`, `normal_folder: normal_npz_indoor` y `load_depth: false`. Para `scan37` se generaron 49 mapas de normales con GeoWizard (`lemonaddie/geowizard`) en dominio `indoor`, con `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. Se verificó que cada mapa tuviera forma `(1162, 1554, 3)`, tipo `float32`, valores finitos y correspondencia con las 49 imágenes.
 
 ## 4. Reconstrucción y evaluación geométrica
 
@@ -95,6 +92,10 @@ La evaluación se realizó utilizando los mismos parámetros para ambas reconstr
 
 De esta manera, las dos mallas se evaluaron bajo las mismas condiciones.
 
+Para la extracción de geometría se utilizó el checkpoint de 30 000 iteraciones de cada método. En VCR-GauS se ejecutó `depth2mesh.py` con `method=tsdf_cpu`, `split=1`, `voxel_size=0.004`, `num_cluster=1`, `max_depth=3` y `prob_thres=0.15`.
+
+En QGS se utilizó la configuración de malla con `mesh_res=1024`, `voxel_size=0.004`, `sdf_trunc=0.016` y `depth_trunc=3.0`. Durante la extracción de `scan37`, QGS indicó que, para un radio de contorno estimado de 2.15, se recomendaba `depth_trunc` de al menos 4.29. La malla se generó manteniendo el valor configurado de 3.0; esta advertencia queda registrada como una limitación que conviene estudiar.
+
 ## 5. Métricas de evaluación
 
 Se utilizaron tres métricas geométricas basadas en distancias entre las superficies reconstruidas y el ground truth.
@@ -107,24 +108,28 @@ Los resultados se expresan en milímetros. Un valor menor representa una menor d
 
 ## 6. Resultados experimentales
 
-Los resultados correspondientes al DTU `scan24` son:
+Los resultados del evaluador común para ambas escenas son:
 
-| Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
-|---|---:|---:|---:|
-| QGS | 0.37360 | 0.45668 | **0.41514** |
-| VCR-GauS | 0.48166 | 0.60121 | **0.54143** |
+| Escena | Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
+|---|---|---:|---:|---:|
+| scan24 | QGS | 0.37360 | 0.45668 | **0.41514** |
+| scan24 | VCR-GauS | 0.48166 | 0.60121 | **0.54143** |
+| scan37 | QGS | 0.71810 | 0.56244 | **0.64027** |
+| scan37 | VCR-GauS | 0.89858 | 0.90154 | **0.90006** |
 
-QGS obtuvo un valor Overall aproximadamente un 23.33 % menor que VCR-GauS en este escaneo.
+QGS obtuvo un Overall aproximadamente un 23.33 % menor que VCR-GauS en `scan24` y un 28.86 % menor en `scan37`. Estos resultados corresponden únicamente a las dos escenas evaluadas y no representan el conjunto completo DTU.
 
-Estos resultados corresponden exclusivamente al escaneo 24 y no deben interpretarse como una comparación sobre el conjunto completo DTU.
+Los resultados detallados se encuentran en `results/metrics/comparison.csv` y `results/metrics/comparison_scan37.csv`. Las figuras se almacenan en `results/figures/metrics_comparison_scan24.png` y `results/figures/metrics_comparison_scan37.png`.
 
-Los resultados detallados se encuentran en `results/metrics/comparison.csv`, mientras que su representación gráfica se almacena en `results/figures/metrics_comparison_scan24.png`.
+En `scan37`, el filtrado común procesó las 49 vistas y conservó todos los vértices de ambas mallas: 195 715/195 715 para QGS y 195 664/195 664 para VCR-GauS. La evaluación de métricas aplicó posteriormente la caja delimitadora y la máscara de observación DTU a los puntos muestreados.
+
+El evaluador propio de QGS informó un Overall de 0.64020618 mm para `scan37`, mientras que el evaluador común informó 0.64026834 mm. La tabla comparativa utiliza el evaluador común para mantener el mismo protocolo entre métodos.
 
 ## 7. Reproducibilidad
 
 Los archivos necesarios para reproducir los experimentos se organizan de la siguiente manera:
 
-- `configs/`: configuraciones utilizadas para ambos métodos.
+- `configs/`: configuraciones utilizadas para ambos métodos y escenas.
 - `scripts/training/`: scripts de entrenamiento.
 - `scripts/evaluation/`: procedimientos de evaluación.
 - `scripts/analysis/`: scripts para comparar métricas y generar visualizaciones.

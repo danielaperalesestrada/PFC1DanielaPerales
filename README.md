@@ -7,7 +7,7 @@ Este proyecto compara dos métodos de reconstrucción geométrica basados en Gau
 
 El objetivo es comparar la calidad geométrica de las superficies reconstruidas mediante métricas de distancia entre la reconstrucción y una geometría de referencia (*ground truth*).
 
-Los experimentos se realizan sobre el conjunto de datos **DTU**, utilizando el escaneo 24 (`scan24`).
+Los experimentos se realizan sobre el conjunto de datos **DTU**, utilizando dos escenas: `scan24` y `scan37`.
 
 Además, se documentan las correcciones aplicadas a la implementación de VCR-GauS para conseguir un entrenamiento estable en el entorno utilizado.
 
@@ -34,6 +34,32 @@ La siguiente figura presenta la comparación de las tres métricas geométricas:
 
 Los resultados numéricos se encuentran en `results/metrics/comparison.csv`.
 
+### Evaluación geométrica: DTU scan37
+
+La segunda escena se evaluó con el mismo procedimiento común y los mismos parámetros utilizados en `scan24`.
+
+| Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
+|---|---:|---:|---:|
+| QGS | 0.71810 | 0.56244 | **0.64027** |
+| VCR-GauS | 0.89858 | 0.90154 | **0.90006** |
+
+QGS obtuvo un Overall aproximadamente **28.86 % menor** que VCR-GauS en `scan37`.
+
+![Comparación geométrica entre QGS y VCR-GauS en DTU scan37](results/figures/metrics_comparison_scan37.png)
+
+Los resultados de esta escena se encuentran en `results/metrics/comparison_scan37.csv` y en los informes JSON de `results/dtu/scan37/comparison/`.
+
+La tabla de ambos escaneos, calculada con el evaluador común, es:
+
+| Escena | Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
+|---|---|---:|---:|---:|
+| scan24 | QGS | 0.37360 | 0.45668 | **0.41514** |
+| scan24 | VCR-GauS | 0.48166 | 0.60121 | **0.54143** |
+| scan37 | QGS | 0.71810 | 0.56244 | **0.64027** |
+| scan37 | VCR-GauS | 0.89858 | 0.90154 | **0.90006** |
+
+Estos resultados corresponden a dos escenas seleccionadas; no representan una evaluación exhaustiva del conjunto DTU.
+
 ## Estructura del proyecto
 
 ```text
@@ -42,9 +68,11 @@ PFC1DanielaPerales/
 ├── VCR-GauS/                  Repositorio de VCR-GauS (submódulo)
 ├── configs/
 │   ├── qgs/
-│   │   └── dtu_scan24.yaml
+│   │   ├── dtu_scan24.yaml
+│   │   └── dtu_scan37.yaml
 │   └── vcr_gaus/
-│       └── dtu_scan24.yaml
+│       ├── dtu_scan24.yaml
+│       └── dtu_scan37.yaml
 ├── scripts/
 │   ├── training/
 │   │   ├── train_qgs.sh
@@ -66,10 +94,15 @@ PFC1DanielaPerales/
 │   └── vcr_gaus/
 │       └── vcr_gaus_fixes.patch
 ├── results/
+│   ├── dtu/
+│   │   ├── scan24/comparison/
+│   │   └── scan37/comparison/
 │   ├── metrics/
-│   │   └── comparison.csv
+│   │   ├── comparison.csv
+│   │   └── comparison_scan37.csv
 │   └── figures/
-│       └── metrics_comparison_scan24.png
+│       ├── metrics_comparison_scan24.png
+│       └── metrics_comparison_scan37.png
 ├── docs/
 │   ├── methodology.md
 │   ├── experimental_setup.md
@@ -154,7 +187,10 @@ El escaneo seleccionado debe estar disponible en:
 datasets/
 └── dtu/
     └── DTU/
-        └── scan24/
+        ├── scan24/
+        │   ├── images/
+        │   └── ...
+        └── scan37/
             ├── images/
             └── ...
 ```
@@ -176,11 +212,10 @@ datasets/
                 └── ...
 ```
 
-Para el escaneo 24 se utilizan, entre otros, los siguientes archivos:
+Los archivos de referencia utilizados son:
 
-- `Points/stl/stl024_total.ply`
-- `ObsMask/ObsMask24_10.mat`
-- `ObsMask/Plane24.mat`
+- `scan24`: `Points/stl/stl024_total.ply`, `ObsMask/ObsMask24_10.mat` y `ObsMask/Plane24.mat`.
+- `scan37`: `Points/stl/stl037_total.ply`, `ObsMask/ObsMask37_10.mat` y `ObsMask/Plane37.mat`.
 
 La ubicación de los datos debe respetar las rutas indicadas en las configuraciones YAML y en los scripts de evaluación.
 
@@ -200,7 +235,10 @@ conda activate QGS
 bash scripts/training/train_qgs.sh
 ```
 
-El script utiliza `configs/qgs/dtu_scan24.yaml` y guarda los resultados en:
+El script utiliza `configs/qgs/dtu_scan24.yaml` por defecto y guarda los resultados en `outputs/qgs_scan24/`. Para seleccionar `scan37`, utiliza `SCAN_ID=37 bash scripts/training/train_qgs.sh`; en ese caso se usa `configs/qgs/dtu_scan37.yaml` y la salida es `outputs/qgs_scan37/`.
+
+La variable `SCAN_ID` permite seleccionar la escena sin duplicar el script.
+
 
 ```text
 outputs/qgs_scan24/
@@ -218,7 +256,8 @@ conda activate vcr
 bash scripts/training/train_vcr_gaus.sh
 ```
 
-El script utiliza `configs/vcr_gaus/dtu_scan24.yaml` y guarda los resultados en:
+El script utiliza `configs/vcr_gaus/dtu_scan24.yaml` por defecto. Para seleccionar `scan37`, utiliza `SCAN_ID=37 bash scripts/training/train_vcr_gaus.sh`; se usa `configs/vcr_gaus/dtu_scan37.yaml` y la salida es `outputs/vcr_gaus/dtu/scan37/final_shpy/`.
+
 
 ```text
 outputs/vcr_gaus/dtu/scan24/final_shpy/
@@ -236,6 +275,8 @@ VCR_LOGDIR=/ruta/alternativa bash scripts/training/train_vcr_gaus.sh
 
 Este directorio también debe estar vacío antes de comenzar.
 
+Para VCR-GauS, la configuración utilizada requiere mapas de normales precomputados (`load_normal: true`, `normal_folder: normal_npz_indoor`) y no carga mapas de profundidad (`load_depth: false`). Para `scan37`, se generaron 49 mapas con GeoWizard usando el dominio `indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. Estos archivos locales no se incluyen en el repositorio.
+
 ## Evaluación geométrica
 
 La evaluación se organiza en dos etapas: filtrado común de las mallas y cálculo de métricas.
@@ -246,6 +287,13 @@ Una vez obtenidas las mallas de ambos métodos, ejecutar desde la raíz del proy
 
 ```bash
 python scripts/evaluation/evaluate_common.py --method both
+```
+
+Para filtrar las mallas de `scan37`, indicar explícitamente la escena:
+
+```bash
+python scripts/evaluation/evaluate_common.py --scan-id 37 --method both
+```
 ```
 
 El script permite procesar ambos métodos o seleccionar uno mediante `--method qgs` y `--method vcr_gaus`.
@@ -278,6 +326,19 @@ python scripts/evaluation/evaluate_metrics.py \
     --workers 4
 ```
 
+Para evaluar `scan37`, añadir `--scan-id 37` al comando:
+
+```bash
+python scripts/evaluation/evaluate_metrics.py \
+    --scan-id 37 \
+    --method both \
+    --density 0.2 \
+    --patch 60 \
+    --max-dist 20 \
+    --seed 42 \
+    --workers 4
+```
+
 El script también permite evaluar cada método individualmente.
 
 Los informes detallados se almacenan junto a las mallas filtradas, en archivos `metrics_common.json`.
@@ -288,6 +349,12 @@ Generar la tabla comparativa:
 
 ```bash
 python scripts/analysis/compare_metrics.py
+```
+
+Para generar el CSV de `scan37` sin sobrescribir el de `scan24`:
+
+```bash
+python scripts/analysis/compare_metrics.py --scan-id 37
 ```
 
 Este script comprueba que ambos métodos utilizaron los mismos parámetros de evaluación y verifica que Overall corresponda al promedio de Accuracy y Completeness.
@@ -304,6 +371,12 @@ Para generar la visualización comparativa:
 
 ```bash
 python scripts/analysis/visualize_results.py
+```
+
+Para generar la figura de `scan37`:
+
+```bash
+python scripts/analysis/visualize_results.py --scan-id 37
 ```
 
 La figura se guarda en:

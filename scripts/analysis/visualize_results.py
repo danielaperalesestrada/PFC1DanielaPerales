@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import csv
 from pathlib import Path
 
@@ -10,8 +11,8 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 
-CSV_PATH = ROOT / "results/metrics/comparison.csv"
-OUTPUT = ROOT / "results/figures/metrics_comparison_scan24.png"
+CSV_PATH = None
+OUTPUT = None
 
 METRICS = {
     "Accuracy": "accuracy_mm",
@@ -20,7 +21,7 @@ METRICS = {
 }
 
 
-def load_data():
+def load_data(scan_id):
     if not CSV_PATH.is_file():
         raise FileNotFoundError(f"No se encontró: {CSV_PATH}")
 
@@ -32,11 +33,32 @@ def load_data():
     if set(data) != {"qgs", "vcr_gaus"}:
         raise ValueError("El CSV debe contener QGS y VCR-GauS.")
 
+    if any(int(row["scan_id"]) != scan_id for row in data.values()):
+        raise ValueError(f"El CSV no corresponde a scan{scan_id}.")
+
     return data
 
 
 def main():
-    data = load_data()
+    global CSV_PATH, OUTPUT
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--scan-id", type=int, default=24)
+    args = parser.parse_args()
+
+    if args.scan_id < 1:
+        parser.error("--scan-id debe ser positivo")
+
+    scan = f"scan{args.scan_id}"
+
+    CSV_PATH = (
+        ROOT / "results/metrics/comparison.csv"
+        if args.scan_id == 24
+        else ROOT / "results/metrics" / f"comparison_{scan}.csv"
+    )
+
+    OUTPUT = ROOT / "results/figures" / f"metrics_comparison_{scan}.png"
+    data = load_data(args.scan_id)
 
     methods = ["QGS", "VCR-GauS"]
     x = np.arange(len(METRICS))
@@ -61,7 +83,7 @@ def main():
 
         ax.bar_label(bars, fmt="%.4f", padding=3, fontsize=9)
 
-    ax.set_title("Comparación geométrica — DTU Scan 24")
+    ax.set_title(f"Comparación geométrica — DTU {scan.capitalize()}")
     ax.set_ylabel("Distancia (mm)")
     ax.set_xticks(x)
     ax.set_xticklabels(METRICS.keys())

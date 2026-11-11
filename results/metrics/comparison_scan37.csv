@@ -1,0 +1,3 @@
+method,scan_id,accuracy_mm,completeness_mm,overall_mm,downsample_density,patch_size,max_dist_mm,random_seed,sampling_workers,mesh_vertices,mesh_faces,points_inside_observation_mask,stl_points_above_plane
+qgs,37,0.71809776,0.56243891,0.64026834,0.2,60.0,20.0,42,4,195715,380228,2064760,2328672
+vcr_gaus,37,0.89858067,0.90153901,0.90005984,0.2,60.0,20.0,42,4,195664,381500,2029521,2328672

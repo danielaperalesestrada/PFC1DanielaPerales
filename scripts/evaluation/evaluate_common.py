@@ -14,18 +14,9 @@ from skimage.morphology import disk
 
 ROOT = Path(__file__).resolve().parents[2]
 
-DATA_DIR = ROOT / "datasets/dtu/DTU/scan24"
-
-METHODS = {
-    "qgs": {
-        "input": ROOT / "outputs/qgs_scan24/train/ours_30000/fuse_post.ply",
-    },
-    "vcr_gaus": {
-        "input": ROOT / "outputs/vcr_gaus/dtu/scan24/final_shpy/ours.ply",
-    },
-}
-
-OUTPUT_DIR = ROOT / "results/dtu/scan24/comparison"
+DATA_DIR = None
+METHODS = {}
+OUTPUT_DIR = None
 
 
 def load_camera(world_mat, scale_mat):
@@ -229,7 +220,10 @@ def cull_mesh(mesh_path, output_path):
 
 
 def main():
+    global DATA_DIR, METHODS, OUTPUT_DIR
+
     parser = argparse.ArgumentParser()
+    parser.add_argument("--scan-id", type=int, default=24)
 
     parser.add_argument(
         "--method",
@@ -238,6 +232,23 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if args.scan_id < 1:
+        parser.error("--scan-id debe ser positivo")
+
+    scan = f"scan{args.scan_id}"
+    DATA_DIR = ROOT / "datasets/dtu/DTU" / scan
+
+    METHODS = {
+        "qgs": {
+            "input": ROOT / "outputs" / f"qgs_{scan}" / "train/ours_30000/fuse_post.ply",
+        },
+        "vcr_gaus": {
+            "input": ROOT / "outputs/vcr_gaus/dtu" / scan / "final_shpy/ours.ply",
+        },
+    }
+
+    OUTPUT_DIR = ROOT / "results/dtu" / scan / "comparison"
 
     methods = (
         ["qgs", "vcr_gaus"]

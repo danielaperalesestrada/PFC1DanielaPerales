@@ -1,0 +1,40 @@
+{
+  "method": "vcr_gaus",
+  "scan_id": 37,
+  "metrics": {
+    "mean_d2s": 0.8985806691099374,
+    "mean_s2d": 0.9015390103757723,
+    "overall": 0.9000598397428549
+  },
+  "parameters": {
+    "downsample_density": 0.2,
+    "patch_size": 60.0,
+    "max_dist": 20.0,
+    "random_seed": 42,
+    "sampling_workers": 4
+  },
+  "point_counts": {
+    "mesh_vertices": 195664,
+    "mesh_faces": 381500,
+    "surface_sample_points": 3119166,
+    "points_before_downsampling": 3314830,
+    "points_after_downsampling": 2424627,
+    "points_inside_bounding_box": 2424627,
+    "points_inside_observation_mask": 2029521,
+    "stl_points": 5166240,
+    "stl_points_above_plane": 2328672,
+    "d2s_distances_below_max_dist": 2029521,
+    "s2d_distances_below_max_dist": 2324119
+  },
+  "protocol": {
+    "mesh_input": "results/dtu/scan37/comparison/vcr_gaus/culled_mesh_common.ply",
+    "ground_truth_directory": "datasets/dtu_gt/dtu-sample/SampleSet/MVS_Data",
+    "culling": "common camera-mask culling; all components retained; no hole repair",
+    "sampling": "same triangle sampling formula as original QGS/VCR-GauS evaluators",
+    "downsampling": "radius_neighbors with fixed-seed shuffled point order",
+    "d2s": "observable reconstruction points to complete STL",
+    "s2d": "STL points above Plane37 to reconstruction points inside BB",
+    "distance_filter": "only distances strictly below max_dist are averaged"
+  },
+  "created_utc": "2026-11-11T16:30:55.497673+00:00"
+}
