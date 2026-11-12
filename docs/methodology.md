@@ -6,7 +6,7 @@ El objetivo de este proyecto es comparar la calidad geométrica de dos métodos 
 
 Ambos métodos buscan reconstruir geometría tridimensional a partir de imágenes tomadas desde múltiples puntos de vista, pero utilizan estrategias diferentes para representar y optimizar las superficies.
 
-La comparación se realiza sobre el conjunto de datos DTU, utilizando dos escenas (`scan24` y `scan37`) y métricas geométricas basadas en distancias entre las superficies reconstruidas y la geometría de referencia.
+La comparación se realiza sobre el conjunto de datos DTU, utilizando tres escenas (`scan24`, `scan37` y `scan40`) y métricas geométricas basadas en distancias entre las superficies reconstruidas y la geometría de referencia.
 
 ## 2. Métodos de reconstrucción
 
@@ -41,12 +41,13 @@ Adicionalmente, propone una estrategia de densificación y división de Gaussian
 
 Se utiliza el conjunto de datos DTU (*Multi-View Stereo Evaluation*), desarrollado para evaluar algoritmos de reconstrucción tridimensional a partir de múltiples imágenes.
 
-Para este proyecto se seleccionaron dos escenas (`scan24` y `scan37`), ambas con imágenes multivista, información de calibración y una reconstrucción de referencia obtenida mediante escaneo de luz estructurada.
+Para este proyecto se seleccionaron tres escenas (`scan24`, `scan37` y `scan40`), todas con imágenes multivista, información de calibración y una reconstrucción de referencia obtenida mediante escaneo de luz estructurada.
 
 Para evaluar la geometría se utilizan los siguientes archivos:
 
 - `scan24`: `stl024_total.ply`, `ObsMask24_10.mat` y `Plane24.mat`.
 - `scan37`: `stl037_total.ply`, `ObsMask37_10.mat` y `Plane37.mat`.
+- `scan40`: `stl040_total.ply`, `ObsMask40_10.mat` y `Plane40.mat`.
 
 El experimento se limita a este escaneo y no representa una evaluación exhaustiva de todos los escenarios del conjunto DTU.
 
@@ -58,7 +59,7 @@ La comparación se organiza en cinco etapas:
 
 Se prepara cada escena de DTU junto con sus imágenes, parámetros de cámara y archivos de referencia. Los dos métodos utilizan la misma escena de entrada y configuraciones específicas compatibles con sus respectivos repositorios.
 
-Para VCR-GauS, `load_normal` permanece activado y `load_depth` desactivado. En `scan37` se generaron los 49 mapas de normales `normal_npz_indoor` con GeoWizard, usando dominio `indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`.
+Para VCR-GauS, `load_normal` permanece activado y `load_depth` desactivado. En `scan37` y `scan40` se generaron 49 mapas de normales `normal_npz_indoor` por escena con GeoWizard, usando dominio `indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. En ambas escenas se validó la correspondencia de los mapas con las 49 imágenes; los mapas de normales tienen forma `(1162, 1554, 3)`, tipo `float32` y valores finitos.
 
 ### 4.2. Entrenamiento
 
@@ -78,9 +79,9 @@ Para reducir las diferencias derivadas de las regiones no observadas, se aplica 
 
 Este procedimiento permite evaluar ambas reconstrucciones bajo las mismas condiciones espaciales.
 
-Las mallas filtradas y los informes correspondientes se almacenan por escena, por ejemplo en `results/dtu/scan24/comparison/` y `results/dtu/scan37/comparison/`, cada una con subdirectorios `qgs/` y `vcr_gaus/`.
+Las mallas filtradas y los informes correspondientes se almacenan por escena, por ejemplo en `results/dtu/scan24/comparison/`, `results/dtu/scan37/comparison/` y `results/dtu/scan40/comparison/`, cada una con subdirectorios `qgs/` y `vcr_gaus/`.
 
-En `scan37`, el filtrado común procesó las 49 vistas, pero no eliminó vértices: QGS conservó 195 715 de 195 715 y VCR-GauS conservó 195 664 de 195 664. La evaluación de métricas aplica además la caja delimitadora y la máscara de observación DTU a los puntos muestreados.
+En `scan37`, el filtrado común procesó las 49 vistas, pero no eliminó vértices: QGS conservó 195 715 de 195 715 y VCR-GauS conservó 195 664 de 195 664. En `scan40` también se procesaron 49 vistas y se conservaron todos los vértices: QGS mantuvo 166 700 de 166 700 y VCR-GauS 170 596 de 170 596. La evaluación de métricas aplica además la caja delimitadora y la máscara de observación DTU a los puntos muestreados.
 
 ### 4.5. Evaluación geométrica
 
@@ -155,14 +156,16 @@ Los resultados siguientes corresponden al evaluador común, con `density=0.2`, `
 | scan24 | VCR-GauS | 0.48166 | 0.60121 | **0.54143** |
 | scan37 | QGS | 0.71810 | 0.56244 | **0.64027** |
 | scan37 | VCR-GauS | 0.89858 | 0.90154 | **0.90006** |
+| scan40 | QGS | 0.33954 | 0.38065 | **0.36009** |
+| scan40 | VCR-GauS | 0.34400 | 0.38703 | **0.36552** |
 
-QGS obtuvo un Overall aproximadamente 23.33 % menor que VCR-GauS en `scan24` y 28.86 % menor en `scan37`. Estas diferencias describen únicamente las dos escenas evaluadas.
+QGS obtuvo un Overall aproximadamente 23.33 % menor que VCR-GauS en `scan24`, 28.86 % menor en `scan37` y 1.48 % menor en `scan40`. Estas diferencias describen únicamente las tres escenas evaluadas.
 
-Para `scan37`, el evaluador propio de QGS informó un Overall de 0.64020618 mm en `results.json`; el evaluador común informó 0.64026834 mm. La comparación entre métodos utiliza los resultados del evaluador común para mantener el mismo protocolo.
+Para `scan37`, el evaluador propio de QGS informó un Overall de 0.64020618 mm en `results.json`; el evaluador común informó 0.64026834 mm. Para `scan40`, los valores fueron 0.36002644 mm con el evaluador propio de QGS y 0.36009064 mm con el evaluador común. La comparación entre métodos utiliza los resultados del evaluador común para mantener el mismo protocolo.
 
 ## 8. Alcance y limitaciones
 
-Los resultados obtenidos corresponden a dos escenas seleccionadas del conjunto DTU (`scan24` y `scan37`).
+Los resultados obtenidos corresponden a tres escenas seleccionadas del conjunto DTU (`scan24`, `scan37` y `scan40`).
 
 Por tanto, permiten comparar el comportamiento de QGS y VCR-GauS en este escenario concreto, pero no permiten establecer una conclusión definitiva sobre cuál método obtiene mejores resultados en todos los escenarios.
 

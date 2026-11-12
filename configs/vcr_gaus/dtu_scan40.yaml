@@ -1,0 +1,125 @@
+data:
+    name: dummy
+detect_anomaly: false
+ip: 127.0.0.1
+model:
+    ch_sem_feat: 2
+    data_device: cuda
+    depth_folder: depths
+    depth_type: intersection
+    enable_semantic: false
+    eval: false
+    images: images
+    init_ply: sparse/points3D.ply
+    llffhold: 1
+    load_depth: false
+    load_mask: false
+    load_normal: true
+    max_init_points: null
+    max_mem: 22
+    mesh:
+        voxel_size: 0.003
+    normal_folder: normal_npz_indoor
+    num_cls: 2
+    ratio: 0
+    resolution: -1
+    sh_degree: 3
+    sphere: false
+    split: false
+    use_decoupled_appearance: false
+    use_decoupled_dnormal: false
+    white_background: true
+optim:
+    appearance_embeddings_lr: 0.001
+    appearance_network_lr: 0.001
+    close_depth_from_iter: 15000
+    cls_lr: 0.0005
+    consistent_normal_from_iter: 15000
+    cos_thr: -1
+    curv_from_iter: 0
+    densification_interval: 100
+    densify_from_iter: 500
+    densify_grad_threshold: 0.0005
+    densify_large:
+        interval: 1
+        percent_dense: 0.01
+        sample_cams:
+            around: true
+            look_mode: target
+            num: 30
+            random: false
+            up: true
+    densify_until_iter: 15000
+    dnormal_from_iter: 0
+    edge_thr: 0
+    exp_t: 0.01
+    feature_lr: 0.0025
+    iterations: 30000
+    loss_weight:
+        consistent_normal: 0.05
+        depth_normal: 0
+        depth_var: 0
+        distortion: 1000
+        entropy: 0
+        l1: 0.8
+        l1_scale: 1
+        mono_depth: 0
+        mono_normal: 0.01
+        semantic: 0
+        ssim: 0.2
+    mask_depth_thr: 0
+    normal_from_iter: 0
+    opacity_lr: 0.05
+    opacity_reset_interval: 3000
+    percent_dense: 0.01
+    position_lr_delay_mult: 0.01
+    position_lr_final: 1.6e-06
+    position_lr_init: 0.00016
+    position_lr_max_steps: 30000
+    prune:
+        decay: 0.6
+        iterations:
+        - 15000
+        - 25000
+        percent: 0.5
+        v_pow: 0.1
+    rand_pts: 20000
+    random_background: false
+    rotation_lr: 0.001
+    scaling_lr: 0.005
+    sdf_lr: 0.001
+    weight_decay: 0.01
+pipline:
+    compute_cov3D_python: false
+    convert_SHs_python: true
+    debug: false
+port: -1
+seed: 0
+silent: 0
+train:
+    checkpoint_iterations:
+    - 2000
+    - 4000
+    - 6000
+    - 8000
+    - 10000
+    - 12000
+    - 14000
+    - 16000
+    - 18000
+    - 20000
+    - 22000
+    - 24000
+    - 26000
+    - 28000
+    debug_from: -1
+    save_iterations:
+    - 14000
+    - 29000
+    - 30000
+    save_mesh: false
+    save_splat: false
+    start_checkpoint: null
+    test_iterations:
+    - 7000
+    - 30000

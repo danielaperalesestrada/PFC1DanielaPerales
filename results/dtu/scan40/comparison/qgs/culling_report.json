@@ -1,0 +1,13 @@
+{
+    "input_mesh": "/media/daniela/Archivos/PFC1DanielaPerales/outputs/qgs_scan40/train/ours_30000/fuse_post.ply",
+    "output_mesh": "/media/daniela/Archivos/PFC1DanielaPerales/results/dtu/scan40/comparison/qgs/culled_mesh_common.ply",
+    "camera_count": 49,
+    "mask_dilation_radius": 24,
+    "vertices_original": 166700,
+    "vertices_conservados": 166700,
+    "faces_originales": 325649,
+    "faces_conservadas": 325649,
+    "largest_component_selection": false,
+    "automatic_mesh_processing": false,
+    "hole_repair": false
+}
