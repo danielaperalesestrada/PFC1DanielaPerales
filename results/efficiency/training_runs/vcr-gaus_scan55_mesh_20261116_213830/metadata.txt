@@ -1,0 +1,54 @@
+method=vcr-gaus
+scan_id=scan55_mesh
+metadata_created=2026-11-16T21:38:30-05:00
+hostname=daniela-LOQ-15ARP9
+working_directory=/media/daniela/Archivos/PFC1DanielaPerales
+conda_environment=vcr
+python_path=/media/daniela/Archivos/conda/envs/vcr/bin/python
+python_version=Python 3.10.22
+uname=Linux daniela-LOQ-15ARP9 6.14.0-36-generic #36~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Oct 15 15:45:17 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+[GPU]
+GPU 0: NVIDIA GeForce RTX 4060 Laptop GPU (UUID: GPU-41aa3a2e-9591-88b2-5875-55097ad4e92b)
+Mon Nov 16 21:38:30 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.95.05              Driver Version: 580.95.05      CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4060 ...    Off |   00000000:01:00.0  On |                  N/A |
+| N/A   39C    P8              4W /   35W |     472MiB /   8188MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            2251      G   /usr/lib/xorg/Xorg                      120MiB |
+|    0   N/A  N/A            2511      G   /usr/bin/gnome-shell                     30MiB |
+|    0   N/A  N/A            3021      G   ...exec/xdg-desktop-portal-gnome          2MiB |
+|    0   N/A  N/A          359534      G   .../8995/usr/lib/firefox/firefox        228MiB |
+|    0   N/A  N/A          362253      G   /usr/bin/nautilus                        10MiB |
++-----------------------------------------------------------------------------------------+
+
+[CUDA / PyTorch]
+torch_version: 2.0.1+cu118
+torch_cuda_version: 11.8
+cuda_available: True
+gpu_name: NVIDIA GeForce RTX 4060 Laptop GPU
+
+[Git]
+d3c48ece2a2318f70d4cc292885d5beb68048a8a
+74d05c945e99fcaef7afe5a8831903be71ad9b55
+aa715d19bfacfa9d491f477c572eab1839dcee3e
+
+[Disco al inicio]
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p4  196G  176G   20G  90% /media/daniela/Archivos
+
+[Comando]
+bash -c $'cd VCR-GauS && python tools/depth2mesh.py \\\n    --mesh_name ours.ply --split 1 --method tsdf_cpu \\\n    --voxel_size 0.004 --num_cluster 1 --max_depth 3 --clean \\\n    --prob_thres 0.15 \\\n    --cfg_path ../outputs/vcr_gaus/dtu/scan55/final_shpy_eff2_20261116_121811/config.yaml' 

@@ -1,0 +1,11 @@
+Ejecución VCR-GauS scan55 con data_device=cuda, cortada por falta de memoria GPU.
+Inicio: 2026-11-16 10:15. Fallo en la iteración ~12000, tras 6571.965 s.
+Error: torch.cuda.OutOfMemoryError (7.61 GiB de capacidad, 6.99 GiB asignados).
+Pico global de GPU observado: 7775 MiB. El resumen original se perdió; datos copiados de la terminal.
+
+PYTORCH_CUDA_ALLOC_CONF:
+- Entrenamiento original de scan55 (fidelidad) y repetición cortada por OOM: max_split_size_mb:128 (valor por defecto del script).
+- Repetición de eficiencia que completó (eff2, lanzada a las 12:18): max_split_size_mb:64.
+  Para reproducirla: PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:64 SCAN_ID=55 bash scripts/training/train_vcr_gaus.sh
+- Intento de las 12:16: falló al arrancar por expandable_segments (no soportado en PyTorch 2.0.1).
+Una sola ejecución por configuración: no se puede atribuir el resultado del OOM al valor del parámetro.

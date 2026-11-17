@@ -1,0 +1,5 @@
+run,method,scan,phase,duration_s,gpu_process_mem_max_mib,gpu_mem_max_mib_global,gpu_util_max_pct,gpu_temp_max_c,gpu_power_max_w
+qgs_scan55_mesh_20261116_094141,qgs,scan55,mesh,13.797,1296,1750,90,53,32.9
+qgs_scan55_train_20261116_070140,qgs,scan55,train,9054.683,3160,3837,100,73,47.2
+vcr-gaus_scan55_mesh_20261116_213830,vcr-gaus,scan55,mesh,27.021,1572,2055,100,47,35.0
+vcr-gaus_scan55_train_20261116_121811,vcr-gaus,scan55,train,14035.148,7630,7769,100,77,56.6

@@ -12,9 +12,9 @@ if [[ ! "$SCAN_ID" =~ ^[0-9]{2}$ ]]; then
 fi
 
 QGS_DIR="$ROOT/QGS"
-CONFIG="$ROOT/configs/qgs/dtu_scan${SCAN_ID}.yaml"
+CONFIG="${QGS_CONFIG:-$ROOT/configs/qgs/dtu_scan${SCAN_ID}.yaml}"
 DATA="$ROOT/datasets/dtu/DTU/scan${SCAN_ID}"
-OUTPUT_DIR="$ROOT/outputs/qgs_scan${SCAN_ID}"
+OUTPUT_DIR="${QGS_OUTPUT_DIR:-$ROOT/outputs/qgs_scan${SCAN_ID}}"
 
 if [[ ! -f "$CONFIG" ]]; then
     echo "ERROR: No se encuentra la configuración: $CONFIG" >&2
@@ -72,4 +72,4 @@ echo "Resultados: $OUTPUT_DIR"
 cd "$QGS_DIR"
 
 python train.py \
-    --conf_path "../configs/qgs/dtu_scan${SCAN_ID}.yaml"
+    --conf_path "$CONFIG"

@@ -1,0 +1,40 @@
+{
+  "method": "qgs",
+  "scan_id": 55,
+  "metrics": {
+    "mean_d2s": 0.33457773700063403,
+    "mean_s2d": 0.40656538545038595,
+    "overall": 0.37057156122551
+  },
+  "parameters": {
+    "downsample_density": 0.2,
+    "patch_size": 60.0,
+    "max_dist": 20.0,
+    "random_seed": 42,
+    "sampling_workers": 4
+  },
+  "point_counts": {
+    "mesh_vertices": 135010,
+    "mesh_faces": 262970,
+    "surface_sample_points": 1813493,
+    "points_before_downsampling": 1948503,
+    "points_after_downsampling": 1387054,
+    "points_inside_bounding_box": 1387054,
+    "points_inside_observation_mask": 1196843,
+    "stl_points": 3259599,
+    "stl_points_above_plane": 1910894,
+    "d2s_distances_below_max_dist": 1196843,
+    "s2d_distances_below_max_dist": 1909645
+  },
+  "protocol": {
+    "mesh_input": "results/dtu/scan55/comparison/qgs/culled_mesh_common.ply",
+    "ground_truth_directory": "datasets/dtu_gt/dtu-sample/SampleSet/MVS_Data",
+    "culling": "common camera-mask culling; all components retained; no hole repair",
+    "sampling": "same triangle sampling formula as original QGS/VCR-GauS evaluators",
+    "downsampling": "radius_neighbors with fixed-seed shuffled point order",
+    "d2s": "observable reconstruction points to complete STL",
+    "s2d": "STL points above Plane55 to reconstruction points inside BB",
+    "distance_filter": "only distances strictly below max_dist are averaged"
+  },
+  "created_utc": "2026-11-16T10:29:48.633673+00:00"
+}
