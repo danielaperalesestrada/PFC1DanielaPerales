@@ -18,7 +18,7 @@ Las instrucciones de instalación y compilación se encuentran en `environments/
 
 ## 2. Conjunto de datos
 
-Se utilizó el conjunto de datos **DTU (Multi-View Stereo Evaluation)**, seleccionando tres escenas: `scan24`, `scan37` y `scan40`.
+Se utilizó el conjunto de datos **DTU (Multi-View Stereo Evaluation)**, seleccionando cuatro escenas: `scan24`, `scan37`, `scan40` y `scan55`.
 
 El conjunto se utiliza tanto para entrenar los modelos como para evaluar geométricamente las superficies reconstruidas.
 
@@ -27,6 +27,7 @@ Para la evaluación se utilizaron los siguientes archivos de referencia:
 - `scan24`: `Points/stl/stl024_total.ply`, `ObsMask/ObsMask24_10.mat` y `ObsMask/Plane24.mat`.
 - `scan37`: `Points/stl/stl037_total.ply`, `ObsMask/ObsMask37_10.mat` y `ObsMask/Plane37.mat`.
 - `scan40`: `Points/stl/stl040_total.ply`, `ObsMask/ObsMask40_10.mat` y `ObsMask/Plane40.mat`.
+- `scan55`: `Points/stl/stl055_total.ply`, `ObsMask/ObsMask55_10.mat` y `ObsMask/Plane55.mat`.
 
 Los datos y archivos de referencia se almacenan localmente y no se incluyen en el repositorio.
 
@@ -109,7 +110,7 @@ Los resultados se expresan en milímetros. Un valor menor representa una menor d
 
 ## 6. Resultados experimentales
 
-Los resultados del evaluador común para ambas escenas son:
+Los resultados del evaluador común para las cuatro escenas son:
 
 | Escena | Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
 |---|---|---:|---:|---:|
@@ -119,8 +120,10 @@ Los resultados del evaluador común para ambas escenas son:
 | scan37 | VCR-GauS | 0.89858 | 0.90154 | **0.90006** |
 | scan40 | QGS | 0.33954 | 0.38065 | **0.36009** |
 | scan40 | VCR-GauS | 0.34400 | 0.38703 | **0.36552** |
+| scan55 | QGS | 0.33458 | 0.40657 | **0.37057** |
+| scan55 | VCR-GauS | 0.37248 | 0.45784 | **0.41516** |
 
-QGS obtuvo un Overall aproximadamente un 23.33 % menor que VCR-GauS en `scan24`, un 28.86 % menor en `scan37` y un 1.48 % menor en `scan40`. Estos resultados corresponden únicamente a las tres escenas evaluadas y no representan el conjunto completo DTU.
+QGS obtuvo un Overall aproximadamente un 23.33 % menor que VCR-GauS en `scan24`, un 28.86 % menor en `scan37`, un 1.48 % menor en `scan40` y un 10.74 % menor en `scan55`. Estos resultados corresponden únicamente a las cuatro escenas evaluadas y no representan el conjunto completo DTU.
 
 Los resultados detallados se encuentran en `results/metrics/comparison.csv`, `results/metrics/comparison_scan37.csv` y `results/metrics/comparison_scan40.csv`. Las figuras se almacenan en `results/figures/metrics_comparison_scan24.png`, `results/figures/metrics_comparison_scan37.png` y `results/figures/metrics_comparison_scan40.png`.
 
@@ -131,6 +134,16 @@ El evaluador propio de QGS informó un Overall de 0.64020618 mm para `scan37`, m
 ### Incidencias durante la ejecución de scan40
 
 El primer intento de entrenamiento de VCR-GauS se interrumpió por falta de memoria de GPU alrededor de la iteración 5700. El último checkpoint guardado correspondía a la iteración 4000. Se reanudó desde `chkpnt4000.pth` mediante `train.start_checkpoint`, utilizando `model.data_device=cpu` para almacenar las imágenes y normales de las cámaras en RAM y transferirlas a CUDA durante el cálculo. Se mantuvo la resolución original y el entrenamiento completó las 30 000 iteraciones.
+
+### Scan55: configuración, incidencias y medición de eficiencia
+
+- **QGS:** `configs/qgs/dtu_scan55.yaml` conserva los hiperparámetros de las demás escenas. El entrenamiento original se lanzó con una configuración no versionada cuyo `case_name` heredó `scan24` de `base.yaml`; en el código, `case_name` solo se usa para lanzar la evaluación automática final y para elegir el GT en `eval.py`, por lo que no afectó a los datos de entrenamiento (`root_dir` apuntaba a `scan55`). Esa evaluación automática comparó con el GT de `scan24` y se descartó. Las métricas oficiales proceden de `evaluate_metrics.py --scan-id 55`. Los hiperparámetros comprobados coinciden con los de `dtu_scan55.yaml`.
+- **VCR-GauS:** se generaron 49 mapas de normales con GeoWizard (`indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768`, `seed=0`), con forma `(1162, 1554, 3)`, tipo `float32` y valores finitos. El `meta.json` lo generó VCR-GauS automáticamente al arrancar.
+- **Filtrado común:** se procesaron 49 vistas. QGS conservó 135 010 de 135 461 vértices y VCR-GauS 124 184 de 124 185.
+- **Postproceso de malla:** QGS conserva los 10 clústeres más grandes (`render.py`); en VCR-GauS se usó `--clean` con `num_cluster=1`. Es el protocolo original de cada método.
+- **Medición de eficiencia:** repeticiones guardadas aparte; la configuración de `scan55` para la repetición de QGS es `configs/qgs/dtu_scan55_eff.yaml` (solo cambia `model_path`) y `train_qgs.sh` acepta `QGS_CONFIG` y `QGS_OUTPUT_DIR`.
+- **Incidencia de memoria en VCR-GauS:** una repetición con `data_device=cuda` y `max_split_size_mb:128` se interrumpió por falta de memoria de GPU cerca de la iteración 12 000 (tras 6 572 s). La repetición que completó las 30 000 iteraciones se lanzó con `PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:64` y también con `cuda`. Con una sola ejecución por configuración no se puede atribuir la diferencia a ese parámetro. Un intento previo con `expandable_segments` falló al arrancar porque PyTorch 2.0.1 no lo soporta.
+- **Repetibilidad:** las mallas de las repeticiones difieren algo de las originales (QGS: 134 711 frente a 135 461 vértices; VCR-GauS: 124 620 frente a 124 185 tras la limpieza). Las métricas de las repeticiones no se evaluaron.
 
 ## 7. Reproducibilidad
 

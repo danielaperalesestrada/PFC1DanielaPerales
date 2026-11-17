@@ -6,7 +6,7 @@ El objetivo de este proyecto es comparar la calidad geométrica de dos métodos 
 
 Ambos métodos buscan reconstruir geometría tridimensional a partir de imágenes tomadas desde múltiples puntos de vista, pero utilizan estrategias diferentes para representar y optimizar las superficies.
 
-La comparación se realiza sobre el conjunto de datos DTU, utilizando tres escenas (`scan24`, `scan37` y `scan40`) y métricas geométricas basadas en distancias entre las superficies reconstruidas y la geometría de referencia.
+La comparación se realiza sobre el conjunto de datos DTU, utilizando cuatro escenas (`scan24`, `scan37`, `scan40` y `scan55`) y métricas geométricas basadas en distancias entre las superficies reconstruidas y la geometría de referencia.
 
 ## 2. Métodos de reconstrucción
 
@@ -41,13 +41,14 @@ Adicionalmente, propone una estrategia de densificación y división de Gaussian
 
 Se utiliza el conjunto de datos DTU (*Multi-View Stereo Evaluation*), desarrollado para evaluar algoritmos de reconstrucción tridimensional a partir de múltiples imágenes.
 
-Para este proyecto se seleccionaron tres escenas (`scan24`, `scan37` y `scan40`), todas con imágenes multivista, información de calibración y una reconstrucción de referencia obtenida mediante escaneo de luz estructurada.
+Para este proyecto se seleccionaron cuatro escenas (`scan24`, `scan37`, `scan40` y `scan55`), todas con imágenes multivista, información de calibración y una reconstrucción de referencia obtenida mediante escaneo de luz estructurada.
 
 Para evaluar la geometría se utilizan los siguientes archivos:
 
 - `scan24`: `stl024_total.ply`, `ObsMask24_10.mat` y `Plane24.mat`.
 - `scan37`: `stl037_total.ply`, `ObsMask37_10.mat` y `Plane37.mat`.
 - `scan40`: `stl040_total.ply`, `ObsMask40_10.mat` y `Plane40.mat`.
+- `scan55`: `stl055_total.ply`, `ObsMask55_10.mat` y `Plane55.mat`.
 
 El experimento se limita a este escaneo y no representa una evaluación exhaustiva de todos los escenarios del conjunto DTU.
 
@@ -59,7 +60,7 @@ La comparación se organiza en cinco etapas:
 
 Se prepara cada escena de DTU junto con sus imágenes, parámetros de cámara y archivos de referencia. Los dos métodos utilizan la misma escena de entrada y configuraciones específicas compatibles con sus respectivos repositorios.
 
-Para VCR-GauS, `load_normal` permanece activado y `load_depth` desactivado. En `scan37` y `scan40` se generaron 49 mapas de normales `normal_npz_indoor` por escena con GeoWizard, usando dominio `indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. En ambas escenas se validó la correspondencia de los mapas con las 49 imágenes; los mapas de normales tienen forma `(1162, 1554, 3)`, tipo `float32` y valores finitos.
+Para VCR-GauS, `load_normal` permanece activado y `load_depth` desactivado. En `scan37`, `scan40` y `scan55` se generaron 49 mapas de normales `normal_npz_indoor` por escena con GeoWizard, usando dominio `indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. En todas ellas se validó la correspondencia de los mapas con las 49 imágenes; los mapas de normales tienen forma `(1162, 1554, 3)`, tipo `float32` y valores finitos.
 
 ### 4.2. Entrenamiento
 
@@ -158,18 +159,28 @@ Los resultados siguientes corresponden al evaluador común, con `density=0.2`, `
 | scan37 | VCR-GauS | 0.89858 | 0.90154 | **0.90006** |
 | scan40 | QGS | 0.33954 | 0.38065 | **0.36009** |
 | scan40 | VCR-GauS | 0.34400 | 0.38703 | **0.36552** |
+| scan55 | QGS | 0.33458 | 0.40657 | **0.37057** |
+| scan55 | VCR-GauS | 0.37248 | 0.45784 | **0.41516** |
 
-QGS obtuvo un Overall aproximadamente 23.33 % menor que VCR-GauS en `scan24`, 28.86 % menor en `scan37` y 1.48 % menor en `scan40`. Estas diferencias describen únicamente las tres escenas evaluadas.
+QGS obtuvo un Overall aproximadamente 23.33 % menor que VCR-GauS en `scan24`, 28.86 % menor en `scan37`, 1.48 % menor en `scan40` y 10.74 % menor en `scan55`. Estas diferencias describen únicamente las cuatro escenas evaluadas.
 
 Para `scan37`, el evaluador propio de QGS informó un Overall de 0.64020618 mm en `results.json`; el evaluador común informó 0.64026834 mm. Para `scan40`, los valores fueron 0.36002644 mm con el evaluador propio de QGS y 0.36009064 mm con el evaluador común. La comparación entre métodos utiliza los resultados del evaluador común para mantener el mismo protocolo.
 
+### 7.1. Eficiencia computacional (solo scan55)
+
+El tiempo y la memoria se midieron únicamente en `scan55`, con una ejecución por método y fase (optimización y extracción de malla), usando `scripts/monitoring/monitor_training.sh`. El script ejecuta el comando de entrenamiento sin modificarlo y registra duración, memoria GPU (global y del proceso), utilización, temperatura, potencia y RAM del sistema con un muestreo de 1 s.
+
+Estas mediciones se realizaron en repeticiones guardadas aparte (`outputs/efficiency/` y carpetas `eff`), y no se usaron para recalcular las métricas de fidelidad, que proceden de los entrenamientos originales. La optimización de QGS se midió con `train_qgs.sh`, cuyo cronómetro incluye los segundos de una evaluación automática final que falló por no existir aún la malla; la malla se midió después con `render.py`. En VCR-GauS la malla se midió con `depth2mesh.py`. El preprocesado de VCR-GauS (normales con GeoWizard) no se midió con el monitor.
+
+Limitaciones: una sola escena y una sola ejecución por configuración, muestreo de 1 s (puede omitir picos breves), la memoria de RAM es del sistema completo y no del método, y la potencia y la temperatura son valores máximos, no energía consumida.
+
 ## 8. Alcance y limitaciones
 
-Los resultados obtenidos corresponden a tres escenas seleccionadas del conjunto DTU (`scan24`, `scan37` y `scan40`).
+Los resultados obtenidos corresponden a cuatro escenas seleccionadas del conjunto DTU (`scan24`, `scan37`, `scan40` y `scan55`).
 
 Por tanto, permiten comparar el comportamiento de QGS y VCR-GauS en este escenario concreto, pero no permiten establecer una conclusión definitiva sobre cuál método obtiene mejores resultados en todos los escenarios.
 
-Asimismo, la comparación está centrada en la calidad geométrica de las reconstrucciones y no pretende evaluar de manera exhaustiva la calidad visual del renderizado, el tiempo de entrenamiento o el consumo de memoria.
+Asimismo, la comparación de fidelidad está centrada en la calidad geométrica de las reconstrucciones y no evalúa la calidad visual del renderizado. La eficiencia computacional se midió únicamente en `scan55` (sección 7.1) y no permite generalizar.
 
 ## 9. Referencias
 
