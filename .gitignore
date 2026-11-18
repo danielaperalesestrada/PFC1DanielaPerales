@@ -28,3 +28,5 @@ __pycache__/
 # Herramientas y archivos del sistema
 .DS_Store
 wandb/
+/results/photometric/*/qgs/
+/results/photometric/*/vcr_gaus/
