@@ -1,0 +1,56 @@
+method=vcr-gaus
+scan_id=scan63_normals
+metadata_created=2026-11-16T22:26:47-05:00
+hostname=daniela-LOQ-15ARP9
+working_directory=/media/daniela/Archivos/PFC1DanielaPerales
+conda_environment=geowizard
+pytorch_cuda_alloc_conf_in_monitor_env=<no definida>
+cuda_visible_devices=<no definida>
+python_path=/media/daniela/Archivos/conda/envs/geowizard/bin/python
+python_version=Python 3.10.22
+uname=Linux daniela-LOQ-15ARP9 6.14.0-36-generic #36~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Oct 15 15:45:17 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+[GPU]
+GPU 0: NVIDIA GeForce RTX 4060 Laptop GPU (UUID: GPU-41aa3a2e-9591-88b2-5875-55097ad4e92b)
+Mon Nov 16 22:26:47 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.95.05              Driver Version: 580.95.05      CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4060 ...    Off |   00000000:01:00.0  On |                  N/A |
+| N/A   39C    P8              3W /   55W |     491MiB /   8188MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            2251      G   /usr/lib/xorg/Xorg                      130MiB |
+|    0   N/A  N/A            2511      G   /usr/bin/gnome-shell                     25MiB |
+|    0   N/A  N/A            3021      G   ...exec/xdg-desktop-portal-gnome          2MiB |
+|    0   N/A  N/A          359534      G   .../8995/usr/lib/firefox/firefox        225MiB |
+|    0   N/A  N/A          362253      G   /usr/bin/nautilus                        18MiB |
++-----------------------------------------------------------------------------------------+
+
+[CUDA / PyTorch]
+torch_version: 2.0.1+cu118
+torch_cuda_version: 11.8
+cuda_available: True
+gpu_name: NVIDIA GeForce RTX 4060 Laptop GPU
+
+[Git]
+9b2f782d59fc9cb404d1d1a061f75775cba46664
+74d05c945e99fcaef7afe5a8831903be71ad9b55
+aa715d19bfacfa9d491f477c572eab1839dcee3e
+
+[Disco al inicio]
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p4  196G  157G   39G  81% /media/daniela/Archivos
+
+[Comando]
+bash -c $'cd GeoWizard && python -W ignore /media/daniela/Archivos/PFC1DanielaPerales/VCR-GauS/process_data/extract_normal_geo.py \\\n    --code_path /media/daniela/Archivos/PFC1DanielaPerales/GeoWizard/geowizard \\\n    --pretrained_model_path lemonaddie/geowizard \\\n    --input_dir /media/daniela/Archivos/PFC1DanielaPerales/datasets/dtu/DTU/scan63/images/ \\\n    --output_dir /media/daniela/Archivos/PFC1DanielaPerales/datasets/dtu/DTU/scan63/ \\\n    --ensemble_size 3 --denoise_steps 10 --processing_res 768 --seed 0 --domain indoor' 

@@ -1,0 +1,17 @@
+method=vcr-gaus
+scan_id=scan63_normals
+start_time=2026-11-16T22:26:50-05:00
+end_time=2026-11-16T22:45:01-05:00
+duration_seconds=1090.899
+training_exit_code=0
+gpu_memory_max_mib=7677
+gpu_process_memory_max_mib=7178
+gpu_utilization_max_percent=100
+gpu_temperature_max_c=73
+gpu_power_max_w=56.6
+system_ram_used_max_bytes=6045290496
+
+[Disk al finalizar]
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p4  196G  157G   39G  81% /media/daniela/Archivos
+gpu_process_memory_max_mib=7178
