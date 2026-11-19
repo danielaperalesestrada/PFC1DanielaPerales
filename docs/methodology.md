@@ -177,13 +177,14 @@ Para `scan37`, el evaluador propio de QGS informó un Overall de 0.64020618 mm e
 
 ### 7.1. Fotometría (PSNR, SSIM y LPIPS)
 
-Se calcularon en `scan63`, `scan65` y `scan69` sobre las 49 vistas de entrenamiento (`scripts/photometric/`):
+Se calcularon en `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69` sobre las 49 vistas de entrenamiento (`scripts/photometric/`):
 
 - Cada método renderiza sus vistas con el nombre de la imagen original, y el evaluador aborta si un render se parece más a otra imagen que a la suya.
 - Resolución común de 777×581 (la nativa de QGS). La referencia y los renders de VCR-GauS, que salen a 1554×1162, se reducen con filtro Lanczos.
 - Fondo negro en ambos renders. PSNR y SSIM se calculan solo sobre los píxeles del objeto (canal alfa de la imagen original, umbral 0.5) y LPIPS (VGG) sobre la caja delimitadora del objeto.
 - Son vistas de entrenamiento: miden cuánto se ajusta el modelo a las imágenes y no su generalización. Los artículos de QGS y VCR-GauS reportan estas métricas en Mip-NeRF 360 y no en DTU, por lo que no hay valores publicados con los que compararlas.
 - La reducción de resolución podría favorecer a VCR-GauS (promedia el ruido de su render, mientras que el de QGS es nativo). No se ha cuantificado.
+- Las vistas de `scan37`, `scan40` y `scan55` se renderizaron a partir de los modelos de los entrenamientos anteriores (los mismos de los que salen sus mallas y su geometría; en `scan40` el entrenamiento de VCR-GauS se reanudó desde un checkpoint, véase `experimental_setup.md`); las de `scan63`, `scan65` y `scan69`, de la ejecución única con `run_scene.sh`.
 
 ### 7.2. Eficiencia computacional
 
@@ -203,7 +204,7 @@ Los resultados obtenidos corresponden a siete escenas seleccionadas del conjunto
 
 Por tanto, permiten comparar el comportamiento de QGS y VCR-GauS en este escenario concreto, pero no permiten establecer una conclusión definitiva sobre cuál método obtiene mejores resultados en todos los escenarios.
 
-Asimismo, la comparación de fidelidad está centrada en la calidad geométrica de las reconstrucciones. La fotometría se midió solo en tres escenas y sobre vistas de entrenamiento (sección 7.1), y la eficiencia computacional en cuatro escenas con una ejecución por configuración (sección 7.2); ninguna de las dos permite generalizar.
+Asimismo, la comparación de fidelidad está centrada en la calidad geométrica de las reconstrucciones. La fotometría se midió solo en seis escenas y sobre vistas de entrenamiento (sección 7.1), y la eficiencia computacional en cuatro escenas con una ejecución por configuración (sección 7.2); ninguna de las dos permite generalizar.
 
 ## 9. Referencias
 

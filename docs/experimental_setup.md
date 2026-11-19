@@ -163,7 +163,7 @@ El primer intento de entrenamiento de VCR-GauS se interrumpió por falta de memo
 - En `scan63`, QGS estimó un radio de contorno de 2.70 y recomendó un `depth_trunc` de al menos 5.40; se mantuvo 3.0.
 - Los mapas de normales se midieron con el monitor (entre 1 079 y 1 091 s por escena).
 - Al terminar, se borran los checkpoints intermedios de VCR-GauS (`CLEAN_CKPT=0` los conserva); se conserva `chkpnt30000.pth`.
-- Las métricas fotométricas se describen en la sección 7.1 de `methodology.md`.
+- Las métricas fotométricas se describen en la sección 7.1 de `methodology.md`. Se calcularon también en `scan37`, `scan40` y `scan55` con el paso 7 de `run_scene.sh`, sin reentrenar, a partir de los modelos existentes.
 
 ## 7. Reproducibilidad
 
