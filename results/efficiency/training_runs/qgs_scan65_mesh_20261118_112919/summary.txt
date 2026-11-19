@@ -1,0 +1,17 @@
+method=qgs
+scan_id=scan65_mesh
+start_time=2026-11-18T11:29:21-05:00
+end_time=2026-11-18T11:29:34-05:00
+duration_seconds=13.050
+training_exit_code=0
+gpu_memory_max_mib=1351
+gpu_process_memory_max_mib=1214
+gpu_utilization_max_percent=87
+gpu_temperature_max_c=62
+gpu_power_max_w=32.6
+system_ram_used_max_bytes=4448460800
+
+[Disk al finalizar]
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p4  196G  170G   26G  87% /media/daniela/Archivos
+gpu_process_memory_max_mib=1214

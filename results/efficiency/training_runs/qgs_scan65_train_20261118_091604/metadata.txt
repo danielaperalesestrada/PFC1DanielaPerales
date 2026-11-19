@@ -1,0 +1,53 @@
+method=qgs
+scan_id=scan65_train
+metadata_created=2026-11-18T09:16:04-05:00
+hostname=daniela-LOQ-15ARP9
+working_directory=/media/daniela/Archivos/PFC1DanielaPerales
+conda_environment=QGS
+pytorch_cuda_alloc_conf_in_monitor_env=<no definida>
+cuda_visible_devices=<no definida>
+python_path=/media/daniela/Archivos/conda/envs/QGS/bin/python
+python_version=Python 3.9.19
+uname=Linux daniela-LOQ-15ARP9 6.14.0-36-generic #36~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Oct 15 15:45:17 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+[GPU]
+GPU 0: NVIDIA GeForce RTX 4060 Laptop GPU (UUID: GPU-41aa3a2e-9591-88b2-5875-55097ad4e92b)
+Wed Nov 18 09:16:05 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.95.05              Driver Version: 580.95.05      CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4060 ...    Off |   00000000:01:00.0  On |                  N/A |
+| N/A   59C    P3              9W /   55W |     129MiB /   8188MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            2222      G   /usr/lib/xorg/Xorg                       81MiB |
+|    0   N/A  N/A            2477      G   /usr/bin/gnome-shell                     20MiB |
++-----------------------------------------------------------------------------------------+
+
+[CUDA / PyTorch]
+torch_version: 2.2.2
+torch_cuda_version: 12.1
+cuda_available: True
+gpu_name: NVIDIA GeForce RTX 4060 Laptop GPU
+
+[Git]
+7d342070da1a9e488482b249a29d2a8021d6c832
+74d05c945e99fcaef7afe5a8831903be71ad9b55
+aa715d19bfacfa9d491f477c572eab1839dcee3e
+
+[Disco al inicio]
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p4  196G  170G   27G  87% /media/daniela/Archivos
+
+[Comando]
+env SCAN_ID=65 bash scripts/training/train_qgs.sh 

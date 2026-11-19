@@ -1,0 +1,13 @@
+{
+    "input_mesh": "/media/daniela/Archivos/PFC1DanielaPerales/outputs/vcr_gaus/dtu/scan69/final_shpy/ours.ply",
+    "output_mesh": "/media/daniela/Archivos/PFC1DanielaPerales/results/dtu/scan69/comparison/vcr_gaus/culled_mesh_common.ply",
+    "camera_count": 49,
+    "mask_dilation_radius": 24,
+    "vertices_original": 145786,
+    "vertices_conservados": 145374,
+    "faces_originales": 280255,
+    "faces_conservadas": 279492,
+    "largest_component_selection": false,
+    "automatic_mesh_processing": false,
+    "hole_repair": false
+}
