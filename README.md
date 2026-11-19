@@ -7,7 +7,7 @@ Este proyecto compara dos métodos de reconstrucción geométrica basados en Gau
 
 El objetivo es comparar la calidad geométrica de las superficies reconstruidas mediante métricas de distancia entre la reconstrucción y una geometría de referencia (*ground truth*).
 
-Los experimentos se realizan sobre el conjunto de datos **DTU**, utilizando cuatro escenas: `scan24`, `scan37`, `scan40` y `scan55`.
+Los experimentos se realizan sobre el conjunto de datos **DTU**, utilizando siete escenas: `scan24`, `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69`.
 
 Además, se documentan las correcciones aplicadas a la implementación de VCR-GauS para conseguir un entrenamiento estable en el entorno utilizado.
 
@@ -79,7 +79,7 @@ QGS obtuvo un Overall aproximadamente **10.74 % menor** que VCR-GauS en `scan55`
 
 Los resultados de esta escena se encuentran en `results/metrics/comparison_scan55.csv` y en los informes JSON de `results/dtu/scan55/comparison/`.
 
-La tabla de las cuatro escenas, calculada con el evaluador común, es:
+La tabla de las siete escenas, calculada con el evaluador común, es:
 
 | Escena | Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
 |---|---|---:|---:|---:|
@@ -91,27 +91,67 @@ La tabla de las cuatro escenas, calculada con el evaluador común, es:
 | scan40 | VCR-GauS | 0.34400 | 0.38703 | **0.36552** |
 | scan55 | QGS | 0.33458 | 0.40657 | **0.37057** |
 | scan55 | VCR-GauS | 0.37248 | 0.45784 | **0.41516** |
+| scan63 | QGS | 1.04744 | 0.63538 | **0.84141** |
+| scan63 | VCR-GauS | 1.04021 | 0.86669 | **0.95345** |
+| scan65 | QGS | 0.56241 | 0.64932 | **0.60587** |
+| scan65 | VCR-GauS | 0.80002 | 1.06374 | **0.93188** |
+| scan69 | QGS | 0.51688 | 0.48544 | **0.50116** |
+| scan69 | VCR-GauS | 0.74572 | 0.84782 | **0.79677** |
 
-Estos resultados corresponden a cuatro escenas seleccionadas; no representan una evaluación exhaustiva del conjunto DTU.
+Estos resultados corresponden a siete escenas seleccionadas; no representan una evaluación exhaustiva del conjunto DTU. `scan24` procede del procedimiento anterior al pipeline único (véanse las notas más abajo).
 
-## Eficiencia computacional (scan55)
+## Fotometría, eficiencia y comparación con los artículos
 
-Además de la fidelidad geométrica, se midió el coste de entrenamiento en `scan55` con `scripts/monitoring/monitor_training.sh`, una ejecución por método, en una NVIDIA GeForce RTX 4060 Laptop GPU de 8 GB.
+La fotometría (PSNR, SSIM y LPIPS) se calculó en `scan63`, `scan65` y `scan69` sobre las 49 vistas de entrenamiento (`scripts/photometric/`) y la eficiencia con `scripts/monitoring/monitor_training.sh`. Los datos están en `results/photometric/` y `results/efficiency/`; las tablas se generan con `scripts/analysis/build_summary_tables.py`.
 
-| Fase | QGS | VCR-GauS |
-|---|---:|---:|
-| Preprocesado (normales con GeoWizard) | no aplica | 1 075 s (17 min 55 s) * |
-| Optimización (30 000 iteraciones) | 9 054.7 s | 14 035.1 s |
-| Extracción de malla | 13.8 s | 27.0 s |
-| **Total** | **9 068.5 s** | **15 137.2 s** |
-| Memoria GPU del proceso, pico (optimización) | 3 160 MiB | 7 630 MiB |
-| Memoria GPU del proceso, pico (malla) | 1 296 MiB | 1 572 MiB |
+### Fotometría (vistas de entrenamiento, sobre el objeto)
 
-\* El preprocesado de VCR-GauS no se midió con el monitor; el tiempo procede de la barra de progreso de GeoWizard.
+| Escena | QGS PSNR | QGS SSIM | QGS LPIPS | VCR PSNR | VCR SSIM | VCR LPIPS |
+|---|---:|---:|---:|---:|---:|---:|
+| scan63 | 30.76 | 0.9409 | 0.0630 | 31.42 | 0.9450 | 0.0677 |
+| scan65 | 28.54 | 0.9420 | 0.1017 | 32.27 | 0.9455 | 0.1103 |
+| scan69 | 29.65 | 0.9367 | 0.0930 | 30.57 | 0.9438 | 0.0965 |
 
-En esta escena, VCR-GauS tardó aproximadamente 1.55 veces más en la optimización y usó unas 2.4 veces más memoria de GPU que QGS. Es un caso ilustrativo de una sola escena y una sola ejecución por método, con muestreo de 1 s, y no permite generalizar. El pico de VCR-GauS (7 630 MiB) queda cerca del límite de 8 GB, y una ejecución previa se interrumpió por falta de memoria (ver `results/efficiency/NOTA_vcr_scan55_oom.txt`). La potencia y la temperatura registradas son máximos puntuales, no consumo de energía.
+### Eficiencia (una ejecución por método y escena)
 
-Los datos están en `results/efficiency/efficiency_summary.csv` y en `results/efficiency/training_runs/`. Las métricas de fidelidad de `scan55` proceden de los entrenamientos originales, no de estas repeticiones.
+| Escena | QGS opt. (s) | VCR opt. (s) | Razón | QGS mem. (MiB) | VCR mem. (MiB) | QGS malla (s) | VCR malla (s) | VCR normales (s) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| scan55 | 9,054.7 | 14,035.1 | 1.55 | 3160 | 7630 | 13.8 | 27.0 | — |
+| scan63 | 7,508.2 | 8,742.5 | 1.16 | 3142 | 7618 | 12.5 | 14.2 | 1091 |
+| scan65 | 7,992.2 | 11,689.5 | 1.46 | 2810 | 7648 | 13.1 | 16.3 | 1091 |
+| scan69 | 7,908.6 | 12,110.1 | 1.53 | 2544 | 7646 | 13.1 | 17.2 | 1079 |
+
+Razón VCR/QGS de optimización: media 1.43, rango 1.16–1.55 (4 escenas).
+
+### Comparación con los valores publicados (Overall, mm)
+
+| Escena | QGS (este trabajo) | QGS (artículo) | Dif. | VCR-GauS (este trabajo) | VCR-GauS (artículo) | Dif. |
+|---|---:|---:|---:|---:|---:|---:|
+| scan24 | 0.415 | 0.38 | +0.035 | 0.541 | 0.55 | -0.009 |
+| scan37 | 0.640 | 0.62 | +0.020 | 0.900 | 0.91 | -0.010 |
+| scan40 | 0.360 | 0.37 | -0.010 | 0.366 | 0.40 | -0.034 |
+| scan55 | 0.371 | 0.38 | -0.009 | 0.415 | 0.43 | -0.015 |
+| scan63 | 0.841 | 0.75 | +0.091 | 0.953 | 0.97 | -0.017 |
+| scan65 | 0.606 | 0.55 | +0.056 | 0.932 | 0.95 | -0.018 |
+| scan69 | 0.501 | 0.51 | -0.009 | 0.797 | 0.84 | -0.043 |
+
+QGS: Tabla 1 del artículo, fila «Ours». VCR-GauS: Tabla 6 del material suplementario. Los artículos usan su propio evaluador y una sola ejecución; el evaluador de este trabajo conserva todos los componentes de la malla. Mayor diferencia absoluta: QGS 0.091 mm (`scan63`), VCR-GauS 0.043 mm (`scan69`).
+
+Notas de interpretación:
+
+- La ventaja de QGS en Overall se debe sobre todo a Completeness. En `scan63`, VCR-GauS es ligeramente mejor en Accuracy (1.04021 frente a 1.04744 mm); en las demás escenas QGS es mejor en ambas direcciones.
+- `scan24` procede del procedimiento anterior al pipeline único: su `metrics_common.json` registra otro directorio de referencia (`DTU_eval`) y el `meta.json` de VCR-GauS tiene `scale` escalar. Está pendiente de rehacerse.
+- La geometría de `scan24`, `scan37`, `scan40` y `scan55` procede de entrenamientos anteriores (VCR-GauS con `max_split_size_mb:128`); la de `scan63`, `scan65` y `scan69`, de la ejecución única con monitor (`max_split_size_mb:64`). Es un ajuste del asignador de memoria de la GPU; no se ha comprobado su efecto sobre la geometría.
+- La fotometría se midió sobre vistas de entrenamiento: mide ajuste, no generalización. VCR-GauS renderiza a 1554×1162 y se reduce a 777×581, mientras que QGS es nativo a esa resolución; esto podría favorecer a VCR-GauS y no se ha cuantificado.
+- Eficiencia: una ejecución por método y escena. La de `scan55` procede de una repetición aparte (su geometría, del entrenamiento original). El preprocesado de VCR-GauS en `scan55` (GeoWizard, 1 075 s según la barra de progreso) no se midió con el monitor.
+
+## Ejecutar una escena completa
+
+```bash
+bash scripts/run_scene.sh 65
+```
+
+Requiere los entornos Conda `QGS`, `vcr` y `geowizard` en `ENVS_DIR` (por defecto `/media/daniela/Archivos/conda/envs`), la escena en `datasets/dtu/DTU/` y la referencia en `datasets/dtu_gt/`. `DRY_RUN=1` muestra lo que ejecutaría sin lanzar nada y `CLEAN_CKPT=0` conserva los checkpoints intermedios de VCR-GauS. Si se interrumpe, volver a lanzar el mismo comando continúa desde la última fase terminada; si un entrenamiento quedó a medias, el script aborta y hay que revisar o mover esa carpeta.
 
 ## Estructura del proyecto
 

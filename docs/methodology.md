@@ -6,7 +6,7 @@ El objetivo de este proyecto es comparar la calidad geométrica de dos métodos 
 
 Ambos métodos buscan reconstruir geometría tridimensional a partir de imágenes tomadas desde múltiples puntos de vista, pero utilizan estrategias diferentes para representar y optimizar las superficies.
 
-La comparación se realiza sobre el conjunto de datos DTU, utilizando cuatro escenas (`scan24`, `scan37`, `scan40` y `scan55`) y métricas geométricas basadas en distancias entre las superficies reconstruidas y la geometría de referencia.
+La comparación se realiza sobre el conjunto de datos DTU, utilizando siete escenas (`scan24`, `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69`) y métricas geométricas basadas en distancias entre las superficies reconstruidas y la geometría de referencia.
 
 ## 2. Métodos de reconstrucción
 
@@ -41,7 +41,7 @@ Adicionalmente, propone una estrategia de densificación y división de Gaussian
 
 Se utiliza el conjunto de datos DTU (*Multi-View Stereo Evaluation*), desarrollado para evaluar algoritmos de reconstrucción tridimensional a partir de múltiples imágenes.
 
-Para este proyecto se seleccionaron cuatro escenas (`scan24`, `scan37`, `scan40` y `scan55`), todas con imágenes multivista, información de calibración y una reconstrucción de referencia obtenida mediante escaneo de luz estructurada.
+Para este proyecto se seleccionaron siete escenas (`scan24`, `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69`), todas con imágenes multivista, información de calibración y una reconstrucción de referencia obtenida mediante escaneo de luz estructurada.
 
 Para evaluar la geometría se utilizan los siguientes archivos:
 
@@ -49,6 +49,9 @@ Para evaluar la geometría se utilizan los siguientes archivos:
 - `scan37`: `stl037_total.ply`, `ObsMask37_10.mat` y `Plane37.mat`.
 - `scan40`: `stl040_total.ply`, `ObsMask40_10.mat` y `Plane40.mat`.
 - `scan55`: `stl055_total.ply`, `ObsMask55_10.mat` y `Plane55.mat`.
+- `scan63`: `stl063_total.ply`, `ObsMask63_10.mat` y `Plane63.mat`.
+- `scan65`: `stl065_total.ply`, `ObsMask65_10.mat` y `Plane65.mat`.
+- `scan69`: `stl069_total.ply`, `ObsMask69_10.mat` y `Plane69.mat`.
 
 El experimento se limita a este escaneo y no representa una evaluación exhaustiva de todos los escenarios del conjunto DTU.
 
@@ -60,7 +63,7 @@ La comparación se organiza en cinco etapas:
 
 Se prepara cada escena de DTU junto con sus imágenes, parámetros de cámara y archivos de referencia. Los dos métodos utilizan la misma escena de entrada y configuraciones específicas compatibles con sus respectivos repositorios.
 
-Para VCR-GauS, `load_normal` permanece activado y `load_depth` desactivado. En `scan37`, `scan40` y `scan55` se generaron 49 mapas de normales `normal_npz_indoor` por escena con GeoWizard, usando dominio `indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. En todas ellas se validó la correspondencia de los mapas con las 49 imágenes; los mapas de normales tienen forma `(1162, 1554, 3)`, tipo `float32` y valores finitos.
+Para VCR-GauS, `load_normal` permanece activado y `load_depth` desactivado. En `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69` se generaron 49 mapas de normales `normal_npz_indoor` por escena con GeoWizard, usando dominio `indoor`, `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. En todas ellas se validó la correspondencia de los mapas con las 49 imágenes; los mapas de normales tienen forma `(1162, 1554, 3)`, tipo `float32` y valores finitos.
 
 ### 4.2. Entrenamiento
 
@@ -161,26 +164,46 @@ Los resultados siguientes corresponden al evaluador común, con `density=0.2`, `
 | scan40 | VCR-GauS | 0.34400 | 0.38703 | **0.36552** |
 | scan55 | QGS | 0.33458 | 0.40657 | **0.37057** |
 | scan55 | VCR-GauS | 0.37248 | 0.45784 | **0.41516** |
+| scan63 | QGS | 1.04744 | 0.63538 | **0.84141** |
+| scan63 | VCR-GauS | 1.04021 | 0.86669 | **0.95345** |
+| scan65 | QGS | 0.56241 | 0.64932 | **0.60587** |
+| scan65 | VCR-GauS | 0.80002 | 1.06374 | **0.93188** |
+| scan69 | QGS | 0.51688 | 0.48544 | **0.50116** |
+| scan69 | VCR-GauS | 0.74572 | 0.84782 | **0.79677** |
 
-QGS obtuvo un Overall aproximadamente 23.33 % menor que VCR-GauS en `scan24`, 28.86 % menor en `scan37`, 1.48 % menor en `scan40` y 10.74 % menor en `scan55`. Estas diferencias describen únicamente las cuatro escenas evaluadas.
+QGS obtuvo un Overall aproximadamente 23.33 % menor que VCR-GauS en `scan24`, 28.86 % menor en `scan37`, 1.48 % menor en `scan40`, 10.74 % menor en `scan55`, 11.75 % menor en `scan63`, 34.98 % menor en `scan65` y 37.10 % menor en `scan69`. Estas diferencias describen únicamente las siete escenas evaluadas.
 
 Para `scan37`, el evaluador propio de QGS informó un Overall de 0.64020618 mm en `results.json`; el evaluador común informó 0.64026834 mm. Para `scan40`, los valores fueron 0.36002644 mm con el evaluador propio de QGS y 0.36009064 mm con el evaluador común. La comparación entre métodos utiliza los resultados del evaluador común para mantener el mismo protocolo.
 
-### 7.1. Eficiencia computacional (solo scan55)
+### 7.1. Fotometría (PSNR, SSIM y LPIPS)
 
-El tiempo y la memoria se midieron únicamente en `scan55`, con una ejecución por método y fase (optimización y extracción de malla), usando `scripts/monitoring/monitor_training.sh`. El script ejecuta el comando de entrenamiento sin modificarlo y registra duración, memoria GPU (global y del proceso), utilización, temperatura, potencia y RAM del sistema con un muestreo de 1 s.
+Se calcularon en `scan63`, `scan65` y `scan69` sobre las 49 vistas de entrenamiento (`scripts/photometric/`):
 
-Estas mediciones se realizaron en repeticiones guardadas aparte (`outputs/efficiency/` y carpetas `eff`), y no se usaron para recalcular las métricas de fidelidad, que proceden de los entrenamientos originales. La optimización de QGS se midió con `train_qgs.sh`, cuyo cronómetro incluye los segundos de una evaluación automática final que falló por no existir aún la malla; la malla se midió después con `render.py`. En VCR-GauS la malla se midió con `depth2mesh.py`. El preprocesado de VCR-GauS (normales con GeoWizard) no se midió con el monitor.
+- Cada método renderiza sus vistas con el nombre de la imagen original, y el evaluador aborta si un render se parece más a otra imagen que a la suya.
+- Resolución común de 777×581 (la nativa de QGS). La referencia y los renders de VCR-GauS, que salen a 1554×1162, se reducen con filtro Lanczos.
+- Fondo negro en ambos renders. PSNR y SSIM se calculan solo sobre los píxeles del objeto (canal alfa de la imagen original, umbral 0.5) y LPIPS (VGG) sobre la caja delimitadora del objeto.
+- Son vistas de entrenamiento: miden cuánto se ajusta el modelo a las imágenes y no su generalización. Los artículos de QGS y VCR-GauS reportan estas métricas en Mip-NeRF 360 y no en DTU, por lo que no hay valores publicados con los que compararlas.
+- La reducción de resolución podría favorecer a VCR-GauS (promedia el ruido de su render, mientras que el de QGS es nativo). No se ha cuantificado.
 
-Limitaciones: una sola escena y una sola ejecución por configuración, muestreo de 1 s (puede omitir picos breves), la memoria de RAM es del sistema completo y no del método, y la potencia y la temperatura son valores máximos, no energía consumida.
+### 7.2. Eficiencia computacional
+
+El tiempo y la memoria se midieron en `scan55`, `scan63`, `scan65` y `scan69` con `scripts/monitoring/monitor_training.sh`, una ejecución por método, fase y escena, en una NVIDIA GeForce RTX 4060 Laptop GPU de 8 GB. El script ejecuta el comando sin modificarlo y registra duración, memoria de GPU (global y del proceso), utilización, temperatura, potencia y RAM del sistema con un muestreo de 1 s.
+
+- `scan63`, `scan65` y `scan69` se ejecutaron una sola vez con `scripts/run_scene.sh`: geometría, fotometría y eficiencia proceden de la misma ejecución. En `scan55` la eficiencia procede de una repetición aparte; la geometría, del entrenamiento original.
+- En estas mediciones VCR-GauS usó `PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:64`.
+- Razón de tiempo de optimización VCR-GauS/QGS: de 1.16 a 1.55 (media 1.43, 4 escenas). La variación entre escenas es mayor en VCR-GauS y no se ha identificado su causa.
+- Memoria del proceso en la optimización: VCR-GauS entre 7 618 y 7 648 MiB (la GPU tiene 8 188 MiB) y QGS entre 2 544 y 3 160 MiB.
+- Limitaciones: muestreo de 1 s (puede omitir picos breves); la RAM es la del sistema completo; la potencia y la temperatura son máximos, no energía consumida; el tiempo de optimización de QGS incluye unos segundos de una evaluación automática final que falla; el mallado no es estrictamente comparable (QGS conserva 10 clústeres con `render.py` y VCR-GauS usa `depth2mesh.py` con `--clean` y 1 clúster); el preprocesado de VCR-GauS en `scan55` no se midió con el monitor.
+
+Las tablas están en el README y se generan con `scripts/analysis/build_summary_tables.py`.
 
 ## 8. Alcance y limitaciones
 
-Los resultados obtenidos corresponden a cuatro escenas seleccionadas del conjunto DTU (`scan24`, `scan37`, `scan40` y `scan55`).
+Los resultados obtenidos corresponden a siete escenas seleccionadas del conjunto DTU (`scan24`, `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69`).
 
 Por tanto, permiten comparar el comportamiento de QGS y VCR-GauS en este escenario concreto, pero no permiten establecer una conclusión definitiva sobre cuál método obtiene mejores resultados en todos los escenarios.
 
-Asimismo, la comparación de fidelidad está centrada en la calidad geométrica de las reconstrucciones y no evalúa la calidad visual del renderizado. La eficiencia computacional se midió únicamente en `scan55` (sección 7.1) y no permite generalizar.
+Asimismo, la comparación de fidelidad está centrada en la calidad geométrica de las reconstrucciones. La fotometría se midió solo en tres escenas y sobre vistas de entrenamiento (sección 7.1), y la eficiencia computacional en cuatro escenas con una ejecución por configuración (sección 7.2); ninguna de las dos permite generalizar.
 
 ## 9. Referencias
 

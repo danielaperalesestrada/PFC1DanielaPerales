@@ -18,7 +18,7 @@ Las instrucciones de instalación y compilación se encuentran en `environments/
 
 ## 2. Conjunto de datos
 
-Se utilizó el conjunto de datos **DTU (Multi-View Stereo Evaluation)**, seleccionando cuatro escenas: `scan24`, `scan37`, `scan40` y `scan55`.
+Se utilizó el conjunto de datos **DTU (Multi-View Stereo Evaluation)**, seleccionando siete escenas: `scan24`, `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69`.
 
 El conjunto se utiliza tanto para entrenar los modelos como para evaluar geométricamente las superficies reconstruidas.
 
@@ -28,6 +28,9 @@ Para la evaluación se utilizaron los siguientes archivos de referencia:
 - `scan37`: `Points/stl/stl037_total.ply`, `ObsMask/ObsMask37_10.mat` y `ObsMask/Plane37.mat`.
 - `scan40`: `Points/stl/stl040_total.ply`, `ObsMask/ObsMask40_10.mat` y `ObsMask/Plane40.mat`.
 - `scan55`: `Points/stl/stl055_total.ply`, `ObsMask/ObsMask55_10.mat` y `ObsMask/Plane55.mat`.
+- `scan63`: `Points/stl/stl063_total.ply`, `ObsMask/ObsMask63_10.mat` y `ObsMask/Plane63.mat`.
+- `scan65`: `Points/stl/stl065_total.ply`, `ObsMask/ObsMask65_10.mat` y `ObsMask/Plane65.mat`.
+- `scan69`: `Points/stl/stl069_total.ply`, `ObsMask/ObsMask69_10.mat` y `ObsMask/Plane69.mat`.
 
 Los datos y archivos de referencia se almacenan localmente y no se incluyen en el repositorio.
 
@@ -74,7 +77,7 @@ Durante el entrenamiento se utilizaron los siguientes argumentos específicos:
 | Checkpoints | Cada 2000 iteraciones, desde 2000 hasta 28000 |
 | Guardado del modelo | 14000, 29000 y 30000 |
 
-El entrenamiento utilizó cuatro hilos de OpenMP y la configuración de memoria CUDA `max_split_size_mb:128`.
+El entrenamiento utilizó cuatro hilos de OpenMP y la configuración de memoria CUDA `max_split_size_mb:128` (`scan24`, `scan37`, `scan40` y el entrenamiento original de `scan55`; en `scan63`, `scan65` y `scan69` se usó `max_split_size_mb:64`, véase más abajo).
 
 VCR-GauS se ejecutó con `load_normal: true`, `normal_folder: normal_npz_indoor` y `load_depth: false`. Para `scan37` y `scan40` se generaron 49 mapas de normales por escena con GeoWizard (`lemonaddie/geowizard`) en dominio `indoor`, con `ensemble_size=3`, `denoise_steps=10`, `processing_res=768` y `seed=0`. En ambas escenas se verificó que los mapas tuvieran forma `(1162, 1554, 3)`, tipo `float32`, valores finitos y correspondencia con las 49 imágenes.
 
@@ -110,7 +113,7 @@ Los resultados se expresan en milímetros. Un valor menor representa una menor d
 
 ## 6. Resultados experimentales
 
-Los resultados del evaluador común para las cuatro escenas son:
+Los resultados del evaluador común para las siete escenas son:
 
 | Escena | Método | Accuracy (mm) | Completeness (mm) | Overall (mm) |
 |---|---|---:|---:|---:|
@@ -122,8 +125,14 @@ Los resultados del evaluador común para las cuatro escenas son:
 | scan40 | VCR-GauS | 0.34400 | 0.38703 | **0.36552** |
 | scan55 | QGS | 0.33458 | 0.40657 | **0.37057** |
 | scan55 | VCR-GauS | 0.37248 | 0.45784 | **0.41516** |
+| scan63 | QGS | 1.04744 | 0.63538 | **0.84141** |
+| scan63 | VCR-GauS | 1.04021 | 0.86669 | **0.95345** |
+| scan65 | QGS | 0.56241 | 0.64932 | **0.60587** |
+| scan65 | VCR-GauS | 0.80002 | 1.06374 | **0.93188** |
+| scan69 | QGS | 0.51688 | 0.48544 | **0.50116** |
+| scan69 | VCR-GauS | 0.74572 | 0.84782 | **0.79677** |
 
-QGS obtuvo un Overall aproximadamente un 23.33 % menor que VCR-GauS en `scan24`, un 28.86 % menor en `scan37`, un 1.48 % menor en `scan40` y un 10.74 % menor en `scan55`. Estos resultados corresponden únicamente a las cuatro escenas evaluadas y no representan el conjunto completo DTU.
+QGS obtuvo un Overall aproximadamente un 23.33 % menor que VCR-GauS en `scan24`, un 28.86 % menor en `scan37`, un 1.48 % menor en `scan40`, un 10.74 % menor en `scan55`, un 11.75 % menor en `scan63`, un 34.98 % menor en `scan65` y un 37.10 % menor en `scan69`. Estos resultados corresponden únicamente a las siete escenas evaluadas y no representan el conjunto completo DTU.
 
 Los resultados detallados se encuentran en `results/metrics/comparison.csv`, `results/metrics/comparison_scan37.csv` y `results/metrics/comparison_scan40.csv`. Las figuras se almacenan en `results/figures/metrics_comparison_scan24.png`, `results/figures/metrics_comparison_scan37.png` y `results/figures/metrics_comparison_scan40.png`.
 
@@ -144,6 +153,17 @@ El primer intento de entrenamiento de VCR-GauS se interrumpió por falta de memo
 - **Medición de eficiencia:** repeticiones guardadas aparte; la configuración de `scan55` para la repetición de QGS es `configs/qgs/dtu_scan55_eff.yaml` (solo cambia `model_path`) y `train_qgs.sh` acepta `QGS_CONFIG` y `QGS_OUTPUT_DIR`.
 - **Incidencia de memoria en VCR-GauS:** una repetición con `data_device=cuda` y `max_split_size_mb:128` se interrumpió por falta de memoria de GPU cerca de la iteración 12 000 (tras 6 572 s). La repetición que completó las 30 000 iteraciones se lanzó con `PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:64` y también con `cuda`. Con una sola ejecución por configuración no se puede atribuir la diferencia a ese parámetro. Un intento previo con `expandable_segments` falló al arrancar porque PyTorch 2.0.1 no lo soporta.
 - **Repetibilidad:** las mallas de las repeticiones difieren algo de las originales (QGS: 134 711 frente a 135 461 vértices; VCR-GauS: 124 620 frente a 124 185 tras la limpieza). Las métricas de las repeticiones no se evaluaron.
+
+### Escenas scan63, scan65 y scan69 (pipeline único)
+
+- Se ejecutaron con `scripts/run_scene.sh <id>`, que encadena normales (GeoWizard), entrenamiento y malla de VCR-GauS, entrenamiento y malla de QGS, evaluación geométrica, métricas fotométricas y resumen de eficiencia. Cada fase pesada se ejecuta bajo `monitor_training.sh`, omite lo que ya existe y aborta si encuentra una carpeta de salida a medias.
+- Los configs se crean a partir de los de `scan40` (QGS, cambiando el identificador de escena) y de `scan63` (VCR-GauS); el script comprueba que `case_name` coincida con la escena y que `eval` sea `false` en ambos.
+- VCR-GauS se entrenó con `PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:64` (frente a `128` en los entrenamientos anteriores) y `data_device=cuda`. Los tres entrenamientos completaron las 30 000 iteraciones.
+- Al terminar el entrenamiento de QGS, `train.py` lanza una evaluación automática que falla porque aún no existe `fuse_post.ply`; añade unos segundos al tiempo medido y no afecta al modelo. La malla se genera después con `render.py`.
+- En `scan63`, QGS estimó un radio de contorno de 2.70 y recomendó un `depth_trunc` de al menos 5.40; se mantuvo 3.0.
+- Los mapas de normales se midieron con el monitor (entre 1 079 y 1 091 s por escena).
+- Al terminar, se borran los checkpoints intermedios de VCR-GauS (`CLEAN_CKPT=0` los conserva); se conserva `chkpnt30000.pth`.
+- Las métricas fotométricas se describen en la sección 7.1 de `methodology.md`.
 
 ## 7. Reproducibilidad
 
