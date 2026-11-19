@@ -102,12 +102,13 @@ Estos resultados corresponden a siete escenas seleccionadas; no representan una 
 
 ## Fotometría, eficiencia y comparación con los artículos
 
-La fotometría (PSNR, SSIM y LPIPS) se calculó en `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69` sobre las 49 vistas de entrenamiento (`scripts/photometric/`) y la eficiencia con `scripts/monitoring/monitor_training.sh`. Los datos están en `results/photometric/` y `results/efficiency/`; las tablas se generan con `scripts/analysis/build_summary_tables.py`.
+La fotometría (PSNR, SSIM y LPIPS) se calculó en `scan24`, `scan37`, `scan40`, `scan55`, `scan63`, `scan65` y `scan69` sobre las 49 vistas de entrenamiento (`scripts/photometric/`) y la eficiencia con `scripts/monitoring/monitor_training.sh`. Los datos están en `results/photometric/` y `results/efficiency/`; las tablas se generan con `scripts/analysis/build_summary_tables.py`.
 
 ### Fotometría (vistas de entrenamiento, sobre el objeto)
 
 | Escena | QGS PSNR | QGS SSIM | QGS LPIPS | VCR PSNR | VCR SSIM | VCR LPIPS |
 |---|---:|---:|---:|---:|---:|---:|
+| scan24 | 30.95 | 0.9441 | 0.0599 | 32.31 | 0.9514 | 0.0552 |
 | scan37 | 25.10 | 0.9079 | 0.0907 | 24.85 | 0.9175 | 0.0822 |
 | scan40 | 30.47 | 0.9245 | 0.1299 | 31.17 | 0.9436 | 0.1002 |
 | scan55 | 30.17 | 0.9575 | 0.0591 | 31.93 | 0.9631 | 0.0519 |
@@ -142,8 +143,8 @@ QGS: Tabla 1 del artículo, fila «Ours». VCR-GauS: Tabla 6 del material suplem
 
 Notas de interpretación:
 
-- Fotometría (6 escenas, vistas de entrenamiento): VCR-GauS tiene mayor PSNR en 5 de 6 escenas (diferencia media de +1.25 dB, de -0.25 a +3.73), mayor SSIM en 6 de 6 (diferencia media de +0.0081) y menor LPIPS en 3 de 6. La desviación del PSNR entre vistas llega a 4.4 dB y no se hizo ninguna prueba estadística, por lo que las diferencias deben tomarse como pequeñas y no concluyentes.
-- La fotometría de `scan37`, `scan40` y `scan55` se calculó sobre los modelos de los entrenamientos anteriores (los mismos de los que salen sus mallas); la de `scan63`, `scan65` y `scan69`, sobre la ejecución única con `run_scene.sh`.
+- Fotometría (7 escenas, vistas de entrenamiento): VCR-GauS tiene mayor PSNR en 6 de 7 escenas (diferencia media de +1.27 dB, de -0.25 a +3.73), mayor SSIM en 7 de 7 (diferencia media de +0.0080) y menor LPIPS en 4 de 7. La desviación del PSNR entre vistas llega a 4.4 dB y no se hizo ninguna prueba estadística, por lo que las diferencias deben tomarse como pequeñas y no concluyentes.
+- La fotometría de `scan24`, `scan37`, `scan40` y `scan55` se calculó sobre los modelos de los entrenamientos anteriores (los mismos de los que salen sus mallas); la de `scan63`, `scan65` y `scan69`, sobre la ejecución única con `run_scene.sh`. Los modelos de `scan24` se entrenaron con todas las vistas (`eval: false` en su `config.yaml`) y su referencia geométrica es el mismo archivo que usan las demás escenas, aunque el JSON antiguo la nombra como `DTU_eval`.
 - La ventaja de QGS en Overall se debe sobre todo a Completeness. En `scan63`, VCR-GauS es ligeramente mejor en Accuracy (1.04021 frente a 1.04744 mm); en las demás escenas QGS es mejor en ambas direcciones.
 - `scan24` procede del procedimiento anterior al pipeline único: su `metrics_common.json` registra otro directorio de referencia (`DTU_eval`) y el `meta.json` de VCR-GauS tiene `scale` escalar. Está pendiente de rehacerse.
 - La geometría de `scan24`, `scan37`, `scan40` y `scan55` procede de entrenamientos anteriores (VCR-GauS con `max_split_size_mb:128`); la de `scan63`, `scan65` y `scan69`, de la ejecución única con monitor (`max_split_size_mb:64`). Es un ajuste del asignador de memoria de la GPU; no se ha comprobado su efecto sobre la geometría.
